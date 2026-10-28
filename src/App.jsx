@@ -5,14 +5,14 @@ import CargarTrabajo from "./components/CargarTrabajo";
 export default function App() {
   const [empleados, setEmpleados] = useState([]);
   const [maquinas, setMaquinas] = useState([]);
+  const [asignaciones, setAsignaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // Sesión/Selección del empleado
+  // Sesión/Selección del empleado y máquina
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
   const [maquinaSeleccionada, setMaquinaSeleccionada] = useState("");
   const [sesionIniciada, setSesionIniciada] = useState(false);
 
-  // Vista activa: 'menu' | 'trabajo' | 'consumo'
   const [vistaActiva, setVistaActiva] = useState("menu");
 
   useEffect(() => {
@@ -22,18 +22,41 @@ export default function App() {
   async function cargarDatosIniciales() {
     try {
       setCargando(true);
-      const [resEmp, resMaq] = await Promise.all([
+      const [resEmp, resMaq, resAsig] = await Promise.all([
         api.get("/empleados").catch(() => ({ data: [] })),
         api.get("/maquinas").catch(() => ({ data: [] })),
+        api.get("/empleados-maquinas").catch(() => ({ data: [] })),
       ]);
       setEmpleados(resEmp.data);
       setMaquinas(resMaq.data);
+      setAsignaciones(resAsig.data);
     } catch (error) {
       console.error("Error al cargar datos:", error);
     } finally {
       setCargando(false);
     }
   }
+
+  // Autoseleccionar la máquina cuando cambia el empleado usando la vinculación
+  const handleEmpleadoChange = (e) => {
+    const empId = e.target.value;
+    setEmpleadoSeleccionado(empId);
+
+    if (!empId) {
+      setMaquinaSeleccionada("");
+      return;
+    }
+
+    const relacion = asignaciones.find(
+      (a) => String(a.empleado_id || a.empleadoId) === String(empId),
+    );
+
+    if (relacion) {
+      setMaquinaSeleccionada(String(relacion.maquina_id || relacion.maquinaId));
+    } else {
+      setMaquinaSeleccionada("");
+    }
+  };
 
   const handleIngresar = (e) => {
     e.preventDefault();
@@ -74,7 +97,7 @@ export default function App() {
               <select
                 required
                 value={empleadoSeleccionado}
-                onChange={(e) => setEmpleadoSeleccionado(e.target.value)}
+                onChange={handleEmpleadoChange}
                 style={styles.selectLarge}
               >
                 <option value="">-- Seleccionar Nombre --</option>
@@ -93,13 +116,13 @@ export default function App() {
             </div>
 
             <div style={styles.group}>
-              <label style={styles.label}>Máquina Asignada</label>
+              <label style={styles.label}>Máquina Asignada (Automática)</label>
               <select
                 value={maquinaSeleccionada}
                 onChange={(e) => setMaquinaSeleccionada(e.target.value)}
                 style={styles.selectLarge}
               >
-                <option value="">-- Seleccionar Máquina --</option>
+                <option value="">-- Sin máquina vinculada --</option>
                 {maquinas.map((maq) => (
                   <option key={maq.id} value={maq.id}>
                     {maq.nombre || maq.modelo || `Máquina #${maq.id}`}
@@ -117,7 +140,6 @@ export default function App() {
     );
   }
 
-  // Obtenemos objeto del empleado seleccionado
   const empObj = empleados.find(
     (e) => String(e.id) === String(empleadoSeleccionado),
   );
@@ -126,7 +148,6 @@ export default function App() {
       empObj.username
     : "Operario";
 
-  // --- MENÚ PRINCIPAL (2 BOTONES GIGANTES) ---
   return (
     <div style={styles.appMobile}>
       <header style={styles.headerLogged}>
@@ -190,7 +211,6 @@ export default function App() {
               </button>
               <h2 style={styles.tituloForm}>Registrar Consumo</h2>
             </div>
-            {/* Próximamente vincularemos el formulario corto de consumos */}
             <p
               style={{
                 color: "#64748b",
@@ -207,7 +227,7 @@ export default function App() {
   );
 }
 
-// --- ESTILOS EXCLUSIVOS PARA MOBILE ---
+// Estilos móviles integrados (mismos que venías usando)
 const styles = {
   appMobile: {
     maxWidth: "480px",

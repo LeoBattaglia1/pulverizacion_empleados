@@ -2,20 +2,23 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 
 export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
+  const [pasoActual, setPasoActual] = useState(1);
+
   const [clientes, setClientes] = useState([]);
   const [campos, setCampos] = useState([]);
   const [lotes, setLotes] = useState([]);
 
-  // Formulario
+  // Formulario Paso 1
   const [fechaTrabajo, setFechaTrabajo] = useState(
     new Date().toISOString().split("T")[0],
   );
   const [clienteId, setClienteId] = useState("");
   const [campoId, setCampoId] = useState("");
-  const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
 
-  const [guardando, setGuardando] = useState(false);
+  // Formulario Paso 2
+  const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
   const [nuevoLoteNombre, setNuevoLoteNombre] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,10 +140,9 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
 
   const lotesActivosArray = Object.entries(lotesSeleccionadosData);
 
-  const formValido =
-    fechaTrabajo &&
-    clienteId &&
-    campoId &&
+  const paso1Valido = Boolean(fechaTrabajo && clienteId && campoId);
+
+  const paso2Valido =
     lotesActivosArray.length > 0 &&
     lotesActivosArray.every(
       ([, data]) =>
@@ -152,7 +154,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     );
 
   const enviarNotificacionWhatsApp = (resumenTrabajo) => {
-    const telefonoJefe = "249154553810";
+    const telefonoJefe = "5492494553810";
     const clienteObj = clientes.find((c) => Number(c.id) === Number(clienteId));
     const campoObj = campos.find((c) => Number(c.id) === Number(campoId));
 
@@ -172,7 +174,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formValido) return;
+    if (!paso2Valido) return;
 
     setGuardando(true);
     const resumenParaWpp = [];
@@ -193,9 +195,9 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           tratamiento: tratamientoFinal || "General",
           tipo_cultivo: cultivoFinal || "General",
           fecha: fechaTrabajo,
+          pendiente_precio: true, // Indicador para que el jefe complete la liquidación
         };
 
-        // Solo hacemos POST a la tabla trabajos
         await api.post("/trabajos", datosTrabajo);
 
         resumenParaWpp.push({
@@ -207,10 +209,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       }
 
       alert("¡Trabajo guardado con éxito!");
-
-      // Disparar mensaje de WhatsApp
       enviarNotificacionWhatsApp(resumenParaWpp);
-
       onVolver();
     } catch (error) {
       console.error("Error al guardar el trabajo:", error);
@@ -225,238 +224,291 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   );
 
   return (
-    <form onSubmit={handleSubmit} style={styles.container}>
-      <div style={styles.fieldGroup}>
-        <label style={styles.label}>📅 Fecha del Trabajo</label>
-        <input
-          type="date"
-          value={fechaTrabajo}
-          onChange={(e) => setFechaTrabajo(e.target.value)}
-          style={styles.input}
-          required
-        />
-      </div>
-
-      <div style={styles.fieldGroup}>
-        <label style={styles.label}>👤 Cliente</label>
-        <select
-          value={clienteId}
-          onChange={(e) => {
-            setClienteId(e.target.value);
-            setCampoId("");
-            setLotesSeleccionadosData({});
-          }}
-          style={styles.select}
-          required
-        >
-          <option value="">-- Seleccionar Cliente --</option>
-          {clientes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nombre}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div style={styles.fieldGroup}>
-        <label style={styles.label}>🌾 Campo</label>
-        <select
-          value={campoId}
-          onChange={handleCampoChange}
-          style={styles.select}
-          disabled={!clienteId}
-          required
-        >
-          <option value="">-- Seleccionar Campo --</option>
-          {campos
-            .filter(
-              (c) => !clienteId || Number(c.cliente_id) === Number(clienteId),
-            )
-            .map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-        </select>
-      </div>
-
-      {campoId && (
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>📍 Seleccionar Lotes</label>
-          <div style={styles.lotesGrid}>
-            {lotesDelCampoActual.map((lote) => {
-              const seleccionado = !!lotesSeleccionadosData[lote.id];
-              return (
-                <div
-                  key={lote.id}
-                  onClick={() => toggleSeleccionLote(lote.id)}
-                  style={styles.loteChip(seleccionado)}
-                >
-                  Lote {lote.numero_lote}
-                </div>
-              );
-            })}
-          </div>
-
-          <div style={styles.nuevoLoteRow}>
-            <input
-              type="text"
-              placeholder="Añadir nuevo lote..."
-              value={nuevoLoteNombre}
-              onChange={(e) => setNuevoLoteNombre(e.target.value)}
-              style={styles.inputSmall}
-            />
-            <button
-              type="button"
-              onClick={agregarNuevoLoteDirecto}
-              style={styles.btnAgregarLote}
-            >
-              + Lote
-            </button>
-          </div>
+    <div>
+      {/* INDICADOR DE PASOS */}
+      <div style={styles.wizardHeader}>
+        <div style={styles.stepBadge(pasoActual === 1, pasoActual > 1)}>
+          1. Ubicación y Fecha
         </div>
-      )}
+        <span style={{ color: "#cbd5e1" }}>➔</span>
+        <div style={styles.stepBadge(pasoActual === 2, false)}>
+          2. Lotes y Cultivos
+        </div>
+      </div>
 
-      {/* DETALLE DE LOTES SELECCIONADOS */}
-      {lotesActivosArray.length > 0 && (
-        <div style={styles.lotesCardContainer}>
-          {lotesActivosArray.map(([loteIdStr, datos]) => {
-            const loteObj = lotes.find(
-              (l) => Number(l.id) === Number(loteIdStr),
-            );
-            return (
-              <div key={loteIdStr} style={styles.loteDetailCard}>
-                <div style={styles.loteTitle}>
-                  Lote {loteObj?.numero_lote || loteIdStr}
-                </div>
+      <form onSubmit={handleSubmit}>
+        {pasoActual === 1 && (
+          <div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>📅 Fecha del Trabajo</label>
+              <input
+                type="date"
+                value={fechaTrabajo}
+                onChange={(e) => setFechaTrabajo(e.target.value)}
+                style={styles.input}
+                required
+              />
+            </div>
 
-                <div style={styles.fieldSubGroup}>
-                  <label style={styles.subLabel}>Hectáreas Realizadas *</label>
-                  <input
-                    type="number"
-                    step="any"
-                    placeholder="Ej: 45"
-                    value={datos.hectareas}
-                    onChange={(e) =>
-                      handleActualizarLoteData(
-                        loteIdStr,
-                        "hectareas",
-                        e.target.value,
-                      )
-                    }
-                    style={styles.inputNumberBig}
-                    required
-                  />
-                </div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>👤 Cliente</label>
+              <select
+                value={clienteId}
+                onChange={(e) => {
+                  setClienteId(e.target.value);
+                  setCampoId("");
+                  setLotesSeleccionadosData({});
+                }}
+                style={styles.select}
+                required
+              >
+                <option value="">-- Seleccionar Cliente --</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                <div style={styles.fieldSubGroup}>
-                  <label style={styles.subLabel}>Tratamiento *</label>
-                  <select
-                    value={datos.tratamiento}
-                    onChange={(e) =>
-                      handleActualizarLoteData(
-                        loteIdStr,
-                        "tratamiento",
-                        e.target.value,
-                      )
-                    }
-                    style={styles.select}
-                    required
-                  >
-                    <option value="">Seleccionar...</option>
-                    <option value="Barbecho">Barbecho</option>
-                    <option value="Pre-emergente">Pre-emergente</option>
-                    <option value="Post-emergente">Post-emergente</option>
-                    <option value="Clearsol">Clearsol</option>
-                    <option value="Hoja Ancha">Hoja Ancha</option>
-                    <option value="otro">Otro</option>
-                  </select>
-                  {datos.tratamiento === "otro" && (
-                    <input
-                      type="text"
-                      placeholder="Especificar tratamiento..."
-                      value={datos.tratamientoOtro}
-                      onChange={(e) =>
-                        handleActualizarLoteData(
-                          loteIdStr,
-                          "tratamientoOtro",
-                          e.target.value,
-                        )
-                      }
-                      style={{ ...styles.input, marginTop: "6px" }}
-                      required
-                    />
-                  )}
-                </div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>🌾 Campo</label>
+              <select
+                value={campoId}
+                onChange={handleCampoChange}
+                style={styles.select}
+                disabled={!clienteId}
+                required
+              >
+                <option value="">-- Seleccionar Campo --</option>
+                {campos
+                  .filter(
+                    (c) =>
+                      !clienteId || Number(c.cliente_id) === Number(clienteId),
+                  )
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+              </select>
+            </div>
 
-                <div style={styles.fieldSubGroup}>
-                  <label style={styles.subLabel}>Cultivo *</label>
-                  <select
-                    value={datos.tipoCultivo}
-                    onChange={(e) =>
-                      handleActualizarLoteData(
-                        loteIdStr,
-                        "tipoCultivo",
-                        e.target.value,
-                      )
-                    }
-                    style={styles.select}
-                    required
-                  >
-                    <option value="">Seleccionar...</option>
-                    <option value="Girasol">Girasol</option>
-                    <option value="Maíz">Maíz</option>
-                    <option value="Soja">Soja</option>
-                    <option value="Trigo">Trigo</option>
-                    <option value="Sorgo">Sorgo</option>
-                    <option value="Avena">Avena</option>
-                    <option value="Cebada">Cebada</option>
-                    <option value="otro">Otro</option>
-                  </select>
-                  {datos.tipoCultivo === "otro" && (
-                    <input
-                      type="text"
-                      placeholder="Especificar cultivo..."
-                      value={datos.tipoCultivoOtro}
-                      onChange={(e) =>
-                        handleActualizarLoteData(
-                          loteIdStr,
-                          "tipoCultivoOtro",
-                          e.target.value,
-                        )
-                      }
-                      style={{ ...styles.input, marginTop: "6px" }}
-                      required
-                    />
-                  )}
-                </div>
+            <div style={styles.actionsRow}>
+              <button
+                type="button"
+                onClick={() => setPasoActual(2)}
+                disabled={!paso1Valido}
+                style={styles.btnSiguiente(!paso1Valido)}
+              >
+                Siguiente ➔
+              </button>
+            </div>
+          </div>
+        )}
+
+        {pasoActual === 2 && (
+          <div>
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>📍 Seleccionar Lotes</label>
+              <div style={styles.lotesGrid}>
+                {lotesDelCampoActual.map((lote) => {
+                  const seleccionado = !!lotesSeleccionadosData[lote.id];
+                  return (
+                    <div
+                      key={lote.id}
+                      onClick={() => toggleSeleccionLote(lote.id)}
+                      style={styles.loteChip(seleccionado)}
+                    >
+                      Lote {lote.numero_lote}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      )}
 
-      <button
-        type="submit"
-        disabled={!formValido || guardando}
-        style={styles.btnSubmit(formValido && !guardando)}
-      >
-        {guardando ? "Guardando..." : "💾 GUARDAR TRABAJO Y NOTIFICAR"}
-      </button>
-    </form>
+              <div style={styles.nuevoLoteRow}>
+                <input
+                  type="text"
+                  placeholder="Añadir nuevo lote..."
+                  value={nuevoLoteNombre}
+                  onChange={(e) => setNuevoLoteNombre(e.target.value)}
+                  style={styles.inputSmall}
+                />
+                <button
+                  type="button"
+                  onClick={agregarNuevoLoteDirecto}
+                  style={styles.btnAgregarLote}
+                >
+                  + Lote
+                </button>
+              </div>
+            </div>
+
+            {/* DETALLE DE LOTES SELECCIONADOS */}
+            {lotesActivosArray.length > 0 && (
+              <div style={styles.lotesCardContainer}>
+                {lotesActivosArray.map(([loteIdStr, datos]) => {
+                  const loteObj = lotes.find(
+                    (l) => Number(l.id) === Number(loteIdStr),
+                  );
+                  return (
+                    <div key={loteIdStr} style={styles.loteDetailCard}>
+                      <div style={styles.loteTitle}>
+                        Lote {loteObj?.numero_lote || loteIdStr}
+                      </div>
+
+                      <div style={styles.fieldSubGroup}>
+                        <label style={styles.subLabel}>
+                          Hectáreas Realizadas *
+                        </label>
+                        <input
+                          type="number"
+                          step="any"
+                          value={datos.hectareas}
+                          onChange={(e) =>
+                            handleActualizarLoteData(
+                              loteIdStr,
+                              "hectareas",
+                              e.target.value,
+                            )
+                          }
+                          style={styles.inputNumberBig}
+                          required
+                        />
+                      </div>
+
+                      <div style={styles.fieldSubGroup}>
+                        <label style={styles.subLabel}>Tratamiento *</label>
+                        <select
+                          value={datos.tratamiento}
+                          onChange={(e) =>
+                            handleActualizarLoteData(
+                              loteIdStr,
+                              "tratamiento",
+                              e.target.value,
+                            )
+                          }
+                          style={styles.select}
+                          required
+                        >
+                          <option value="">Seleccionar...</option>
+                          <option value="Barbecho">Barbecho</option>
+                          <option value="Pre-emergente">Pre-emergente</option>
+                          <option value="Post-emergente">Post-emergente</option>
+                          <option value="Clearsol">Clearsol</option>
+                          <option value="Hoja Ancha">Hoja Ancha</option>
+                          <option value="otro">Otro</option>
+                        </select>
+                        {datos.tratamiento === "otro" && (
+                          <input
+                            type="text"
+                            placeholder="Especificar tratamiento..."
+                            value={datos.tratamientoOtro}
+                            onChange={(e) =>
+                              handleActualizarLoteData(
+                                loteIdStr,
+                                "tratamientoOtro",
+                                e.target.value,
+                              )
+                            }
+                            style={{ ...styles.input, marginTop: "6px" }}
+                            required
+                          />
+                        )}
+                      </div>
+
+                      <div style={styles.fieldSubGroup}>
+                        <label style={styles.subLabel}>Cultivo *</label>
+                        <select
+                          value={datos.tipoCultivo}
+                          onChange={(e) =>
+                            handleActualizarLoteData(
+                              loteIdStr,
+                              "tipoCultivo",
+                              e.target.value,
+                            )
+                          }
+                          style={styles.select}
+                          required
+                        >
+                          <option value="">Seleccionar...</option>
+                          <option value="Girasol">Girasol</option>
+                          <option value="Maíz">Maíz</option>
+                          <option value="Soja">Soja</option>
+                          <option value="Trigo">Trigo</option>
+                          <option value="Sorgo">Sorgo</option>
+                          <option value="Avena">Avena</option>
+                          <option value="Cebada">Cebada</option>
+                          <option value="otro">Otro</option>
+                        </select>
+                        {datos.tipoCultivo === "otro" && (
+                          <input
+                            type="text"
+                            placeholder="Especificar cultivo..."
+                            value={datos.tipoCultivoOtro}
+                            onChange={(e) =>
+                              handleActualizarLoteData(
+                                loteIdStr,
+                                "tipoCultivoOtro",
+                                e.target.value,
+                              )
+                            }
+                            style={{ ...styles.input, marginTop: "6px" }}
+                            required
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div style={styles.actionsRow}>
+              <button
+                type="button"
+                onClick={() => setPasoActual(1)}
+                style={styles.btnAtras}
+              >
+                ⬅ Atrás
+              </button>
+              <button
+                type="submit"
+                disabled={!paso2Valido || guardando}
+                style={styles.btnSubmit(paso2Valido && !guardando)}
+              >
+                {guardando ? "Guardando..." : "💾 GUARDAR TRABAJO Y NOTIFICAR"}
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+    </div>
   );
 }
 
 const styles = {
-  container: {
+  wizardHeader: {
     display: "flex",
-    flexDirection: "column",
-    gap: "16px",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "16px",
+    paddingBottom: "12px",
+    borderBottom: "1px solid #e2e8f0",
   },
+  stepBadge: (activo, completado) => ({
+    padding: "6px 12px",
+    borderRadius: "20px",
+    fontSize: "0.8rem",
+    fontWeight: "700",
+    backgroundColor: activo ? "#2563eb" : completado ? "#dcfce7" : "#f1f5f9",
+    color: activo ? "#ffffff" : completado ? "#15803d" : "#64748b",
+  }),
   fieldGroup: {
     display: "flex",
     flexDirection: "column",
     gap: "6px",
+    marginBottom: "14px",
   },
   label: {
     fontSize: "0.9rem",
@@ -526,6 +578,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "12px",
+    margin: "14px 0",
   },
   loteDetailCard: {
     backgroundColor: "#f8fafc",
@@ -559,16 +612,40 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
   },
-  btnSubmit: (activo) => ({
+  actionsRow: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+    marginTop: "20px",
+  },
+  btnAtras: {
+    padding: "12px 20px",
+    backgroundColor: "#64748b",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "700",
+    cursor: "pointer",
+  },
+  btnSiguiente: (activo) => ({
+    padding: "12px 24px",
+    backgroundColor: activo ? "#2563eb" : "#cbd5e1",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "700",
+    cursor: activo ? "pointer" : "not-allowed",
     width: "100%",
-    padding: "16px",
+  }),
+  btnSubmit: (activo) => ({
+    flex: 1,
+    padding: "14px",
     backgroundColor: activo ? "#16a34a" : "#cbd5e1",
     color: "#ffffff",
     border: "none",
-    borderRadius: "10px",
-    fontSize: "1rem",
+    borderRadius: "8px",
+    fontSize: "0.95rem",
     fontWeight: "800",
-    marginTop: "10px",
-    boxShadow: activo ? "0 4px 12px rgba(22, 163, 74, 0.3)" : "none",
+    cursor: activo ? "pointer" : "not-allowed",
   }),
 };
