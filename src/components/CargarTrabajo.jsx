@@ -195,7 +195,6 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           tratamiento: tratamientoFinal || "General",
           tipo_cultivo: cultivoFinal || "General",
           fecha: fechaTrabajo,
-          pendiente_precio: true, // Indicador para que el jefe complete la liquidación
         };
 
         await api.post("/trabajos", datosTrabajo);
