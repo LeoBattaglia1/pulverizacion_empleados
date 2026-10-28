@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./services/api";
+import CargarTrabajo from "./components/CargarTrabajo";
 
 export default function App() {
   const [empleados, setEmpleados] = useState([]);
@@ -169,10 +170,12 @@ export default function App() {
               </button>
               <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
             </div>
-            {/* Próximamente vincularemos el formulario en cascada de trabajo */}
-            <p style={{ color: "#64748b", textAlign: "center", my: "20px" }}>
-              [ Formulario de Trabajo en desarrollo ]
-            </p>
+
+            <CargarTrabajo
+              empleadoId={empleadoSeleccionado}
+              maquinaId={maquinaSeleccionada}
+              onVolver={() => setVistaActiva("menu")}
+            />
           </div>
         )}
 
@@ -188,7 +191,13 @@ export default function App() {
               <h2 style={styles.tituloForm}>Registrar Consumo</h2>
             </div>
             {/* Próximamente vincularemos el formulario corto de consumos */}
-            <p style={{ color: "#64748b", textAlign: "center", my: "20px" }}>
+            <p
+              style={{
+                color: "#64748b",
+                textAlign: "center",
+                margin: "20px 0",
+              }}
+            >
               [ Formulario de Consumo en desarrollo ]
             </p>
           </div>
