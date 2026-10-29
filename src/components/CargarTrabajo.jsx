@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 
-export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
+export default function CargarTrabajo({
+  empleadoId,
+  maquinaId,
+  nombreEmpleado,
+  telefonoWhatsApp,
+  onVolver,
+}) {
   const [pasoActual, setPasoActual] = useState(1);
 
   const [clientes, setClientes] = useState([]);
@@ -230,22 +236,23 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
         (data.tipoCultivo !== "otro" ? data.tipoCultivo : data.tipoCultivoOtro),
     );
 
-  const enviarNotificacionWhatsApp = (resumenTrabajo) => {
-    const telefonoJefe = "5492494553810";
-    const clienteObj = clientes.find((c) => Number(c.id) === Number(clienteId));
+  const enviarNotificacionWhatsApp = () => {
     const campoObj = campos.find((c) => Number(c.id) === Number(campoId));
+    const nombreCampo = campoObj?.nombre || "N/A";
+    const cantidadLotes = lotesActivosArray.length;
 
-    let mensaje = `NUEVO TRABAJO CARGADO\n`;
-    mensaje += `Fecha: ${fechaTrabajo}\n`;
-    mensaje += `Cliente: ${clienteObj?.nombre || "N/A"}\n`;
-    mensaje += `Campo: ${campoObj?.nombre || "N/A"}\n\n`;
-    mensaje += `Detalle por Lote:\n`;
+    // Sumar hectáreas totales de todos los lotes seleccionados
+    const totalHectareas = lotesActivosArray.reduce((acc, [, data]) => {
+      return acc + (Number(data.hectareas) || 0);
+    }, 0);
 
-    resumenTrabajo.forEach((item) => {
-      mensaje += `- Lote ${item.lote}: ${item.ha} Ha | ${item.tratamiento} | ${item.cultivo}\n`;
-    });
+    // Mensaje exacto solicitado
+    const mensaje = `Operario: ${nombreEmpleado}\nCampo: ${nombreCampo}\nCantidad de lotes: ${cantidadLotes}\nCantidad de hectáreas: ${totalHectareas}`;
 
-    const url = `https://wa.me/${telefonoJefe}?text=${encodeURIComponent(mensaje)}`;
+    // Enlace nativo para abrir directamente la aplicación de WhatsApp en el celular
+    const url = `whatsapp://send?phone=${telefonoWhatsApp}&text=${encodeURIComponent(
+      mensaje,
+    )}`;
     window.location.href = url;
   };
 
@@ -254,11 +261,9 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     if (!paso2Valido) return;
 
     setGuardando(true);
-    const resumenParaWpp = [];
 
     try {
       for (const [loteIdStr, data] of lotesActivosArray) {
-        const loteObj = lotes.find((l) => Number(l.id) === Number(loteIdStr));
         const tratamientoFinal =
           data.tratamiento === "otro" ? data.tratamientoOtro : data.tratamiento;
         const cultivoFinal =
@@ -286,19 +291,12 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           total: 0,
           precio_por_hectarea: 0,
         });
-
-        resumenParaWpp.push({
-          lote: loteObj?.numero_lote || loteIdStr,
-          ha: data.hectareas,
-          tratamiento: tratamientoFinal,
-          cultivo: cultivoFinal,
-        });
       }
 
       setMostrarAlertaExito(true);
 
       setTimeout(() => {
-        enviarNotificacionWhatsApp(resumenParaWpp);
+        enviarNotificacionWhatsApp();
         setMostrarAlertaExito(false);
         onVolver();
       }, 1200);
@@ -493,7 +491,6 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                         <label style={styles.subLabel}>
                           Hectáreas Realizadas *
                         </label>
-                        {/* En CargarTrabajo.jsx, sección hectáreas */}
                         <input
                           type="number"
                           inputMode="decimal"
@@ -675,7 +672,7 @@ const styles = {
     padding: "14px",
     borderRadius: "10px",
     border: "1px solid #cbd5e1",
-    backgroundColor: "#ffffff", // FONDO BLANCO LIMPIO
+    backgroundColor: "#ffffff",
     color: "#0f172a",
     fontSize: "1rem",
     width: "100%",
@@ -687,7 +684,7 @@ const styles = {
     padding: "14px",
     borderRadius: "10px",
     border: "1px solid #cbd5e1",
-    backgroundColor: "#ffffff", // FONDO BLANCO LIMPIO
+    backgroundColor: "#ffffff",
     color: "#0f172a",
     fontSize: "1rem",
     width: "100%",

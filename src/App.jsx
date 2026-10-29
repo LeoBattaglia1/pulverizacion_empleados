@@ -21,6 +21,11 @@ export default function App() {
   const CLAVE_ACCESO_SISTEMA = "1234";
   // ========================================== //
 
+  // ========================================== //
+  // NÚMERO DE WHATSAPP PARA LOS ENVÍOS         //
+  const TELEFONO_WHATSAPP = "5492494553810";
+  // ========================================== //
+
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState(false);
 
@@ -328,6 +333,8 @@ export default function App() {
             <CargarTrabajo
               empleadoId={empleadoSeleccionado}
               maquinaId={maquinaSeleccionada}
+              nombreEmpleado={nombreEmpleado}
+              telefonoWhatsApp={TELEFONO_WHATSAPP}
               onVolver={() => setVistaActiva("menu")}
             />
           </div>
