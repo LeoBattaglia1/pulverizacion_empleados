@@ -14,18 +14,15 @@ export default function CargarTrabajo({
   const [campos, setCampos] = useState([]);
   const [lotes, setLotes] = useState([]);
 
-  // Formulario Paso 1
   const [fechaTrabajo, setFechaTrabajo] = useState(
     new Date().toISOString().split("T")[0],
   );
   const [clienteId, setClienteId] = useState("");
   const [campoId, setCampoId] = useState("");
 
-  // Estados para nuevo cliente y campo dinámico
   const [nuevoClienteNombre, setNuevoClienteNombre] = useState("");
   const [nuevoCampoNombre, setNuevoCampoNombre] = useState("");
 
-  // Formulario Paso 2
   const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
   const [nuevoLoteNombre, setNuevoLoteNombre] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -310,7 +307,6 @@ export default function CargarTrabajo({
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
-      {/* ENCABEZADO Y TÍTULO DEL MÓDULO */}
       <div style={styles.headerForm}>
         <button onClick={onVolver} style={styles.btnVolver}>
           ← Volver
@@ -318,7 +314,6 @@ export default function CargarTrabajo({
         <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
       </div>
 
-      {/* INDICADOR DE PASOS GIGANTE */}
       <div style={styles.wizardHeader}>
         <div style={styles.stepBadge(pasoActual === 1, pasoActual > 1)}>
           1. Ubicación y Fecha
@@ -483,7 +478,6 @@ export default function CargarTrabajo({
               </div>
             </div>
 
-            {/* DETALLE DE LOTES SELECCIONADOS */}
             {lotesActivosArray.length > 0 && (
               <div style={styles.lotesCardContainer}>
                 {lotesActivosArray.map(([loteIdStr, datos]) => {
@@ -501,9 +495,8 @@ export default function CargarTrabajo({
                           Hectáreas Realizadas *
                         </label>
                         <input
-                          type="number"
-                          inputMode="decimal"
-                          step="any"
+                          type="text"
+                          placeholder="0"
                           value={datos.hectareas}
                           onChange={(e) =>
                             handleActualizarLoteData(
@@ -604,7 +597,6 @@ export default function CargarTrabajo({
               </div>
             )}
 
-            {/* BOTONES DE ACCIÓN */}
             <div style={styles.actionsRowCustom}>
               <button
                 type="button"
@@ -625,7 +617,6 @@ export default function CargarTrabajo({
         )}
       </form>
 
-      {/* Cartel de Éxito Flotante */}
       {mostrarAlertaExito && (
         <div style={styles.toastAlert}>
           <div>
@@ -709,7 +700,7 @@ const styles = {
     border: "2px solid #64748b",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px", // Fijo en 16px para evitar zoom automático en móviles
+    fontSize: "16px",
     fontWeight: "800",
     width: "100%",
     boxSizing: "border-box",
@@ -721,7 +712,7 @@ const styles = {
     border: "2px solid #64748b",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px", // Fijo en 16px para evitar zoom automático en móviles
+    fontSize: "16px",
     fontWeight: "800",
     width: "100%",
     boxSizing: "border-box",

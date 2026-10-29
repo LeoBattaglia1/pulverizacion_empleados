@@ -159,7 +159,6 @@ export default function App() {
         <div style={styles.headerAccentLine}></div>
       </header>
 
-      {/* Si hay sesión iniciada y estamos DENTRO de un módulo, mostramos la barra de operario/máquina debajo del header */}
       {sesionIniciada && vistaActiva !== "menu" && (
         <div style={styles.barraSesionModulo}>
           <div style={styles.infoModuloTexto}>
@@ -170,12 +169,6 @@ export default function App() {
               Máq: <strong style={{ color: "#34d399" }}>{nombreMaquina}</strong>
             </span>
           </div>
-          <button
-            onClick={handleModificarDatos}
-            style={styles.btnCambiarDatosModulo}
-          >
-            Cambiar Operario/Máquina
-          </button>
         </div>
       )}
 
@@ -223,7 +216,6 @@ export default function App() {
               gap: "35px",
             }}
           >
-            {/* TARJETA DE LOGIN (Inhabilitada con estilo opaco si ya se inició sesión) */}
             <form
               onSubmit={handleIngresar}
               style={{
@@ -306,8 +298,6 @@ export default function App() {
                 <label style={styles.labelCentered}>Clave de Acceso</label>
                 <input
                   type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
                   placeholder="••••"
                   required
                   value={claveIngresada}
@@ -335,7 +325,6 @@ export default function App() {
               )}
             </form>
 
-            {/* BOTONES GIGANTES EN EL INICIO (SIN DATOS DE OPERARIO JUNTO A ELLOS) */}
             {sesionIniciada && (
               <div style={styles.menuGridDestacado}>
                 <div
@@ -470,16 +459,6 @@ const styles = {
     gap: "16px",
     fontSize: "1rem",
     fontWeight: "800",
-  },
-  btnCambiarDatosModulo: {
-    backgroundColor: "rgba(220, 38, 38, 0.2)",
-    color: "#fca5a5",
-    border: "1px solid #dc2626",
-    padding: "8px 14px",
-    borderRadius: "8px",
-    fontSize: "0.85rem",
-    fontWeight: "800",
-    cursor: "pointer",
   },
   content: {
     padding: "45px 20px",
@@ -665,7 +644,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "25px",
-    marginBottom: "40px", // Mayor separación del título y los inputs como solicitaste
+    marginBottom: "40px",
     borderBottom: "3px solid #f1f5f9",
     paddingBottom: "24px",
   },

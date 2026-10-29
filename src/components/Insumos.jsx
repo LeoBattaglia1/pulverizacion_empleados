@@ -126,7 +126,6 @@ const styles = {
     boxShadow: "0 6px 20px rgba(220, 38, 38, 0.4)",
     letterSpacing: "0.5px",
   },
-  // MODAL GIGANTE Y CON LETRAS MAS GRANDES
   modalOverlay: {
     position: "fixed",
     top: 0,
@@ -185,7 +184,7 @@ const styles = {
     padding: "22px 20px",
     borderRadius: "16px",
     border: "3px solid #64748b",
-    fontSize: "1.2rem", // Letras grandes dentro del input
+    fontSize: "1.2rem",
     fontWeight: "900",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
@@ -494,7 +493,6 @@ export default function Insumos({ empleadoId, maquinaId }) {
         })}
       </div>
 
-      {/* MODAL REPOSICIÓN GIGANTE */}
       {modalCargarAbierto && insumoSeleccionado && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalCard}>
@@ -531,10 +529,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div style={styles.formGroup}>
                 <label style={styles.label}>Cantidad a Ingresar *</label>
                 <input
-                  type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  step="1"
+                  type="text"
                   placeholder="Ej: 200"
                   required
                   value={cantidadCargar}
@@ -576,7 +571,6 @@ export default function Insumos({ empleadoId, maquinaId }) {
         </div>
       )}
 
-      {/* MODAL RETIRO GIGANTE */}
       {modalUsarAbierto && insumoSeleccionado && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalCard}>
@@ -616,10 +610,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div style={styles.formGroup}>
                 <label style={styles.label}>Cantidad a Retirar *</label>
                 <input
-                  type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  step="1"
+                  type="text"
                   placeholder="Ej: 50"
                   required
                   value={cantidadUsar}
