@@ -137,32 +137,32 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
-    padding: "16px",
+    padding: "20px",
     boxSizing: "border-box",
   },
   modalCard: {
     backgroundColor: "#ffffff",
-    padding: "45px 30px",
-    borderRadius: "32px",
-    maxWidth: "520px",
+    padding: "55px 35px",
+    borderRadius: "36px",
+    maxWidth: "580px",
     width: "100%",
-    boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
+    boxShadow: "0 30px 70px rgba(0, 0, 0, 0.5)",
     position: "relative",
-    border: "3px solid #64748b",
+    border: "4px solid #64748b",
     boxSizing: "border-box",
   },
   btnCloseX: {
     position: "absolute",
-    top: "22px",
-    right: "22px",
-    background: "#f1f5f9",
-    border: "2px solid #cbd5e1",
+    top: "25px",
+    right: "25px",
+    background: "#fee2e2",
+    border: "2px solid #fecaca",
     borderRadius: "50%",
-    width: "52px",
-    height: "52px",
-    fontSize: "1.8rem",
+    width: "58px",
+    height: "58px",
+    fontSize: "2rem",
     fontWeight: "900",
-    color: "#0f172a",
+    color: "#991b1b",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
@@ -171,8 +171,8 @@ const styles = {
   formGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "12px",
-    marginBottom: "28px",
+    gap: "14px",
+    marginBottom: "30px",
     width: "100%",
     maxWidth: "100%",
     boxSizing: "border-box",
@@ -185,10 +185,10 @@ const styles = {
     letterSpacing: "0.8px",
   },
   inputClickable: {
-    padding: "24px 22px",
+    padding: "28px 22px",
     borderRadius: "18px",
     border: "3px solid #64748b",
-    fontSize: "28px",
+    fontSize: "32px",
     fontWeight: "900",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
@@ -200,7 +200,7 @@ const styles = {
     boxShadow: "inset 0 4px 10px rgba(0,0,0,0.04)",
   },
   inputDateFixed: {
-    padding: "24px 22px",
+    padding: "28px 22px",
     borderRadius: "18px",
     border: "3px solid #64748b",
     backgroundColor: "#f8fafc",
@@ -214,27 +214,27 @@ const styles = {
   },
   btnModalSubmit: (isReponer) => ({
     flex: 1,
-    padding: "26px",
+    padding: "28px",
     backgroundColor: isReponer ? "#059669" : "#dc2626",
     color: "#fff",
     border: "none",
-    borderRadius: "18px",
-    fontSize: "2.0rem",
+    borderRadius: "20px",
+    fontSize: "2.2rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: isReponer
-      ? "0 8px 25px rgba(5,150,105,0.4)"
-      : "0 8px 25px rgba(220,38,38,0.4)",
+      ? "0 10px 30px rgba(5,150,105,0.4)"
+      : "0 10px 30px rgba(220,38,38,0.4)",
     letterSpacing: "0.5px",
     boxSizing: "border-box",
   }),
   btnModalCancel: {
-    padding: "26px 28px",
+    padding: "28px 30px",
     backgroundColor: "#e2e8f0",
     color: "#334155",
     border: "3px solid #cbd5e1",
-    borderRadius: "18px",
-    fontSize: "1.8rem",
+    borderRadius: "20px",
+    fontSize: "2rem",
     fontWeight: "900",
     cursor: "pointer",
     boxSizing: "border-box",
@@ -243,10 +243,10 @@ const styles = {
     backgroundColor: "#fef2f2",
     border: "3px solid #fecaca",
     color: "#991b1b",
-    padding: "16px 20px",
-    borderRadius: "14px",
-    fontSize: "1.5rem",
-    marginBottom: "24px",
+    padding: "18px 22px",
+    borderRadius: "16px",
+    fontSize: "1.6rem",
+    marginBottom: "28px",
     fontWeight: "900",
     textAlign: "center",
   },
@@ -268,7 +268,6 @@ const styles = {
     boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
     backgroundColor: tipo === "error" ? "#dc2626" : "#059669",
   }),
-  // ESTILOS TECLADO TÁCTIL MODAL
   modalTecladoCardFull: {
     backgroundColor: "#ffffff",
     padding: "35px 24px 50px 24px",
@@ -410,9 +409,8 @@ export default function Insumos({ empleadoId, maquinaId }) {
   );
   const [errorStock, setErrorStock] = useState("");
 
-  // Control del teclado táctil numérico en Insumos
   const [tecladoInsumoAbierto, setTecladoInsumoAbierto] = useState(false);
-  const [tipoAccionInsumo, setTipoAccionInsumo] = useState(""); // "cargar" o "usar"
+  const [tipoAccionInsumo, setTipoAccionInsumo] = useState("");
 
   const mostrarToast = (mensaje, tipo = "success") => {
     const id = Date.now();
@@ -641,9 +639,9 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </button>
             <h3
               style={{
-                marginBottom: "12px",
+                marginBottom: "10px",
                 color: "#0f172a",
-                fontSize: "2.2rem",
+                fontSize: "2.5rem",
                 fontWeight: "900",
               }}
             >
@@ -651,9 +649,9 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </h3>
             <p
               style={{
-                fontSize: "1.5rem",
+                fontSize: "1.7rem",
                 color: "#64748b",
-                marginBottom: "28px",
+                marginBottom: "32px",
                 fontWeight: "800",
               }}
             >
@@ -675,7 +673,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
                   {cantidadCargar !== "" ? (
                     cantidadCargar
                   ) : (
-                    <span style={{ color: "#94a3b8", fontSize: "18px" }}>
+                    <span style={{ color: "#94a3b8", fontSize: "20px" }}>
                       Tocar para ingresar cantidad...
                     </span>
                   )}
@@ -695,8 +693,8 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div
                 style={{
                   display: "flex",
-                  gap: "16px",
-                  marginTop: "35px",
+                  gap: "18px",
+                  marginTop: "40px",
                 }}
               >
                 <button
@@ -726,9 +724,9 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </button>
             <h3
               style={{
-                marginBottom: "12px",
+                marginBottom: "10px",
                 color: "#0f172a",
-                fontSize: "2.2rem",
+                fontSize: "2.5rem",
                 fontWeight: "900",
               }}
             >
@@ -736,9 +734,9 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </h3>
             <p
               style={{
-                fontSize: "1.5rem",
+                fontSize: "1.7rem",
                 color: "#64748b",
-                marginBottom: "28px",
+                marginBottom: "32px",
                 fontWeight: "800",
               }}
             >
@@ -763,7 +761,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
                   {cantidadUsar !== "" ? (
                     cantidadUsar
                   ) : (
-                    <span style={{ color: "#94a3b8", fontSize: "18px" }}>
+                    <span style={{ color: "#94a3b8", fontSize: "20px" }}>
                       Tocar para ingresar cantidad...
                     </span>
                   )}
@@ -783,8 +781,8 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div
                 style={{
                   display: "flex",
-                  gap: "16px",
-                  marginTop: "35px",
+                  gap: "18px",
+                  marginTop: "40px",
                 }}
               >
                 <button
@@ -803,7 +801,6 @@ export default function Insumos({ empleadoId, maquinaId }) {
         </div>
       )}
 
-      {/* MODAL TECLADO TÁCTIL PARA INSUMOS */}
       {tecladoInsumoAbierto && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalTecladoCardFull}>

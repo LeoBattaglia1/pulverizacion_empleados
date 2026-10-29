@@ -330,7 +330,7 @@ export default function App() {
                   }}
                 >
                   {claveIngresada ? (
-                    "•".repeat(claveIngresada.length)
+                    claveIngresada
                   ) : (
                     <span style={{ color: "#94a3b8", fontSize: "24px" }}>
                       Tocar para ingresar clave...
@@ -373,7 +373,7 @@ export default function App() {
 
             <div style={styles.modalClaveDisplay}>
               {claveIngresada ? (
-                "•".repeat(claveIngresada.length)
+                claveIngresada
               ) : (
                 <span style={{ color: "#94a3b8", fontSize: "28px" }}>
                   _ _ _ _
@@ -437,7 +437,7 @@ export default function App() {
                 style={{
                   color: "#34d399",
                   fontWeight: "900",
-                  fontSize: "1.5rem",
+                  fontSize: "2rem",
                   textTransform: "uppercase",
                 }}
               >
@@ -445,7 +445,7 @@ export default function App() {
               </span>
               <span
                 style={{
-                  fontSize: "1.3rem",
+                  fontSize: "1.6rem",
                   color: "#94a3b8",
                   fontWeight: "700",
                 }}
@@ -478,9 +478,9 @@ export default function App() {
 
             <div
               style={{
-                marginTop: "20px",
+                marginTop: "15px",
                 borderTop: "2px solid #334155",
-                paddingTop: "20px",
+                paddingTop: "25px",
               }}
             >
               <button onClick={handleSalirSesion} style={styles.btnSalirModal}>
@@ -666,9 +666,10 @@ const styles = {
     padding: "20px 24px",
     borderRadius: "18px",
     border: "3px solid #64748b",
-    fontSize: "28px",
+    fontSize: "36px",
     fontWeight: "900",
     textAlign: "center",
+    letterSpacing: "8px",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     width: "100%",
@@ -738,10 +739,10 @@ const styles = {
     borderRadius: "18px",
     backgroundColor: "#f8fafc",
     border: "3px solid #64748b",
-    fontSize: "48px",
+    fontSize: "52px",
     fontWeight: "900",
     textAlign: "center",
-    letterSpacing: "14px",
+    letterSpacing: "12px",
     color: "#0f172a",
     minHeight: "85px",
     display: "flex",
@@ -793,68 +794,68 @@ const styles = {
   },
   modalMenuCardFull: {
     backgroundColor: "#0f172a",
-    padding: "45px 30px",
-    borderRadius: "32px",
-    width: "90%",
-    maxWidth: "500px",
-    boxShadow: "0 25px 60px rgba(0,0,0,0.6)",
-    border: "3px solid #34d399",
+    padding: "55px 35px",
+    borderRadius: "36px",
+    width: "94%",
+    maxWidth: "580px",
+    boxShadow: "0 30px 70px rgba(0,0,0,0.7)",
+    border: "4px solid #34d399",
     display: "flex",
     flexDirection: "column",
-    gap: "30px",
+    gap: "35px",
     boxSizing: "border-box",
     margin: "auto",
   },
   menuModalHeader: {
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: "10px",
     borderBottom: "2px solid #334155",
-    paddingBottom: "16px",
+    paddingBottom: "20px",
     textAlign: "center",
   },
   menuBotonesContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "24px",
   },
   btnMenuModalPrimary: {
     width: "100%",
-    padding: "40px 20px",
+    padding: "45px 20px",
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
-    borderRadius: "22px",
-    fontSize: "2.2rem",
+    borderRadius: "24px",
+    fontSize: "2.5rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 10px 30px rgba(5, 150, 105, 0.4)",
+    boxShadow: "0 12px 35px rgba(5, 150, 105, 0.5)",
     textAlign: "center",
   },
   btnMenuModalSecondary: {
     width: "100%",
-    padding: "40px 20px",
+    padding: "45px 20px",
     backgroundColor: "#334155",
     color: "#ffffff",
     border: "none",
-    borderRadius: "22px",
-    fontSize: "2.2rem",
+    borderRadius: "24px",
+    fontSize: "2.5rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 10px 30px rgba(51, 65, 85, 0.4)",
+    boxShadow: "0 12px 35px rgba(51, 65, 85, 0.5)",
     textAlign: "center",
   },
   btnSalirModal: {
     width: "100%",
-    padding: "25px",
+    padding: "30px",
     backgroundColor: "#dc2626",
     color: "#ffffff",
     border: "none",
-    borderRadius: "18px",
-    fontSize: "2rem",
+    borderRadius: "20px",
+    fontSize: "2.3rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 8px 25px rgba(220, 38, 38, 0.4)",
+    boxShadow: "0 10px 30px rgba(220, 38, 38, 0.5)",
     textAlign: "center",
   },
   errorText: {
@@ -940,7 +941,7 @@ const styles = {
   },
   footer: {
     backgroundColor: "#000000",
-    padding: "45px 20px",
+    padding: "20px 15px",
     textAlign: "center",
     display: "flex",
     justifyContent: "center",
@@ -951,7 +952,7 @@ const styles = {
     boxShadow: "0 -8px 30px rgba(0,0,0,0.3)",
   },
   footerLogo: {
-    height: "110px",
+    height: "150px",
     objectFit: "contain",
   },
 };

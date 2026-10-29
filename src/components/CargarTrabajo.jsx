@@ -28,7 +28,6 @@ export default function CargarTrabajo({
   const [guardando, setGuardando] = useState(false);
   const [mostrarAlertaExito, setMostrarAlertaExito] = useState(false);
 
-  // Estados para el teclado numérico flotante en hectáreas
   const [tecladoHectareasAbierto, setTecladoHectareasAbierto] = useState(false);
   const [loteActualId, setLoteActualId] = useState(null);
 
@@ -180,7 +179,6 @@ export default function CargarTrabajo({
     });
   };
 
-  // Funciones para el teclado táctil de hectáreas
   const handleTecladoHectareasClick = (valor) => {
     if (loteActualId === null) return;
     const actual = String(
@@ -364,7 +362,7 @@ export default function CargarTrabajo({
                 type="date"
                 value={fechaTrabajo}
                 onChange={(e) => setFechaTrabajo(e.target.value)}
-                style={styles.inputDateFixed}
+                style={styles.input}
                 required
               />
             </div>
@@ -749,7 +747,6 @@ export default function CargarTrabajo({
         )}
       </form>
 
-      {/* MODAL TECLADO TÁCTIL PARA HECTÁREAS */}
       {tecladoHectareasAbierto && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalTecladoCardFull}>
@@ -800,7 +797,6 @@ export default function CargarTrabajo({
                 } else if (tecla === "ok") {
                   textoBoton = "✓ OK";
                   estiloBoton = styles.teclaOkModalFull;
-                  // Hacemos que ocupe más espacio o se destaque
                 }
 
                 return (
@@ -897,18 +893,6 @@ const styles = {
   },
   input: {
     padding: "30px 22px",
-    borderRadius: "18px",
-    border: "3px solid #64748b",
-    backgroundColor: "#f8fafc",
-    color: "#0f172a",
-    fontSize: "25px",
-    fontWeight: "900",
-    width: "100%",
-    boxSizing: "border-box",
-    outline: "none",
-  },
-  inputDateFixed: {
-    padding: "24px 22px",
     borderRadius: "18px",
     border: "3px solid #64748b",
     backgroundColor: "#f8fafc",
