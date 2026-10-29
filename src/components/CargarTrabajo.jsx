@@ -15,6 +15,10 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const [clienteId, setClienteId] = useState("");
   const [campoId, setCampoId] = useState("");
 
+  // Estados para nuevo cliente y campo dinámico
+  const [nuevoClienteNombre, setNuevoClienteNombre] = useState("");
+  const [nuevoCampoNombre, setNuevoCampoNombre] = useState("");
+
   // Formulario Paso 2
   const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
   const [nuevoLoteNombre, setNuevoLoteNombre] = useState("");
@@ -38,9 +42,88 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     fetchData();
   }, []);
 
+  const handleClienteChange = (e) => {
+    setClienteId(e.target.value);
+    setCampoId("");
+    setNuevoClienteNombre("");
+    setNuevoCampoNombre("");
+    setLotesSeleccionadosData({});
+  };
+
   const handleCampoChange = (e) => {
     setCampoId(e.target.value);
+    setNuevoCampoNombre("");
     setLotesSeleccionadosData({});
+  };
+
+  const confirmarCrearCliente = async () => {
+    const nombreCli = nuevoClienteNombre.trim();
+    const nombreCmp = nuevoCampoNombre.trim();
+
+    if (!nombreCli) {
+      alert("Ingrese el nombre del nuevo cliente.");
+      return;
+    }
+    if (!nombreCmp) {
+      alert("Al crear un nuevo cliente, es obligatorio crear un nuevo campo.");
+      return;
+    }
+
+    try {
+      const resCli = await api.post("/clientes", { nombre: nombreCli });
+      const nuevoCliId = resCli.data.id || Date.now();
+      const cliObj = { id: nuevoCliId, nombre: nombreCli };
+
+      const resCmp = await api.post("/campos", {
+        cliente_id: Number(nuevoCliId),
+        nombre: nombreCmp,
+      });
+      const nuevoCmpId = resCmp.data.id || Date.now();
+      const cmpObj = {
+        id: nuevoCmpId,
+        cliente_id: Number(nuevoCliId),
+        nombre: nombreCmp,
+      };
+
+      setClientes((prev) => [...prev, cliObj]);
+      setCampos((prev) => [...prev, cmpObj]);
+
+      setClienteId(String(nuevoCliId));
+      setCampoId(String(nuevoCmpId));
+      setNuevoClienteNombre("");
+      setNuevoCampoNombre("");
+    } catch (error) {
+      console.error("Error al crear cliente y campo:", error);
+      alert("No se pudo registrar el nuevo cliente/campo.");
+    }
+  };
+
+  const confirmarCrearCampo = async () => {
+    const nombreCmp = nuevoCampoNombre.trim();
+    if (!nombreCmp || !clienteId) {
+      alert("Ingrese el nombre del nuevo campo.");
+      return;
+    }
+
+    try {
+      const resCmp = await api.post("/campos", {
+        cliente_id: Number(clienteId),
+        nombre: nombreCmp,
+      });
+      const nuevoCmpId = resCmp.data.id || Date.now();
+      const cmpObj = {
+        id: nuevoCmpId,
+        cliente_id: Number(clienteId),
+        nombre: nombreCmp,
+      };
+
+      setCampos((prev) => [...prev, cmpObj]);
+      setCampoId(String(nuevoCmpId));
+      setNuevoCampoNombre("");
+    } catch (error) {
+      console.error("Error al crear campo:", error);
+      alert("No se pudo agregar el campo.");
+    }
   };
 
   const toggleSeleccionLote = (loteId) => {
@@ -102,7 +185,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   };
 
   const agregarNuevoLoteDirecto = async () => {
-    if (!nuevoLoteNombre.trim() || !campoId) return;
+    if (!nuevoLoteNombre.trim() || !campoId || campoId === "nuevo") return;
     try {
       const res = await api.post("/lotes", {
         campo_id: Number(campoId),
@@ -140,7 +223,13 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
 
   const lotesActivosArray = Object.entries(lotesSeleccionadosData);
 
-  const paso1Valido = Boolean(fechaTrabajo && clienteId && campoId);
+  const paso1Valido = Boolean(
+    fechaTrabajo &&
+    clienteId &&
+    clienteId !== "nuevo" &&
+    campoId &&
+    campoId !== "nuevo",
+  );
 
   const paso2Valido =
     lotesActivosArray.length > 0 &&
@@ -197,7 +286,20 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           fecha: fechaTrabajo,
         };
 
-        await api.post("/trabajos", datosTrabajo);
+        // 1. Guardar el trabajo y obtener su ID
+        const resTrabajo = await api.post("/trabajos", datosTrabajo);
+        const trabajoId = resTrabajo.data.id || resTrabajo.data.insertId;
+
+        // 2. Crear el registro en pagos_clientes con los campos en 0
+        await api.post("/pagos-clientes", {
+          trabajo_id: Number(trabajoId),
+          fecha: fechaTrabajo,
+          monto_pendiente: 0,
+          subtotal: 0,
+          iva: 0,
+          total: 0,
+          precio_por_hectarea: 0,
+        });
 
         resumenParaWpp.push({
           lote: loteObj?.numero_lote || loteIdStr,
@@ -253,11 +355,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
               <label style={styles.label}>👤 Cliente</label>
               <select
                 value={clienteId}
-                onChange={(e) => {
-                  setClienteId(e.target.value);
-                  setCampoId("");
-                  setLotesSeleccionadosData({});
-                }}
+                onChange={handleClienteChange}
                 style={styles.select}
                 required
               >
@@ -267,7 +365,53 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                     {c.nombre}
                   </option>
                 ))}
+                <option value="nuevo">➕ Nuevo Cliente...</option>
               </select>
+
+              {clienteId === "nuevo" && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    marginTop: "8px",
+                    padding: "10px",
+                    backgroundColor: "#eff6ff",
+                    borderRadius: "8px",
+                    border: "1px dashed #3b82f6",
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Nombre del nuevo cliente *"
+                    value={nuevoClienteNombre}
+                    onChange={(e) => setNuevoClienteNombre(e.target.value)}
+                    style={styles.input}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Nombre del primer campo (Obligatorio) *"
+                    value={nuevoCampoNombre}
+                    onChange={(e) => setNuevoCampoNombre(e.target.value)}
+                    style={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={confirmarCrearCliente}
+                    style={{
+                      padding: "10px",
+                      backgroundColor: "#2563eb",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Guardar Nuevo Cliente y Campo
+                  </button>
+                </div>
+              )}
             </div>
 
             <div style={styles.fieldGroup}>
@@ -276,21 +420,59 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                 value={campoId}
                 onChange={handleCampoChange}
                 style={styles.select}
-                disabled={!clienteId}
+                disabled={!clienteId || clienteId === "nuevo"}
                 required
               >
                 <option value="">-- Seleccionar Campo --</option>
                 {campos
-                  .filter(
-                    (c) =>
-                      !clienteId || Number(c.cliente_id) === Number(clienteId),
-                  )
+                  .filter((c) => Number(c.cliente_id) === Number(clienteId))
                   .map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nombre}
                     </option>
                   ))}
+                {clienteId && clienteId !== "nuevo" && (
+                  <option value="nuevo">➕ Nuevo Campo...</option>
+                )}
               </select>
+
+              {campoId === "nuevo" && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    marginTop: "8px",
+                    padding: "10px",
+                    backgroundColor: "#eff6ff",
+                    borderRadius: "8px",
+                    border: "1px dashed #3b82f6",
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Nombre del nuevo campo *"
+                    value={nuevoCampoNombre}
+                    onChange={(e) => setNuevoCampoNombre(e.target.value)}
+                    style={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={confirmarCrearCampo}
+                    style={{
+                      padding: "10px",
+                      backgroundColor: "#2563eb",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Guardar Nuevo Campo
+                  </button>
+                </div>
+              )}
             </div>
 
             <div style={styles.actionsRow}>
@@ -626,14 +808,14 @@ const styles = {
     fontWeight: "700",
     cursor: "pointer",
   },
-  btnSiguiente: (activo) => ({
+  btnSiguiente: (isDisabled) => ({
     padding: "12px 24px",
-    backgroundColor: activo ? "#2563eb" : "#cbd5e1",
+    backgroundColor: isDisabled ? "#cbd5e1" : "#2563eb",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
     fontWeight: "700",
-    cursor: activo ? "pointer" : "not-allowed",
+    cursor: isDisabled ? "not-allowed" : "pointer",
     width: "100%",
   }),
   btnSubmit: (activo) => ({
