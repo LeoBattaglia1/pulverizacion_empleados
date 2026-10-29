@@ -5,6 +5,7 @@ const styles = {
   container: {
     padding: "10px 0",
     width: "100%",
+    maxWidth: "100%",
     boxSizing: "border-box",
   },
   grid: {
@@ -12,6 +13,8 @@ const styles = {
     gridTemplateColumns: "1fr",
     gap: "30px",
     width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
   },
   tanqueCard: (colorBorde) => ({
     backgroundColor: "#ffffff",
@@ -24,6 +27,7 @@ const styles = {
     boxShadow: "0 12px 35px rgba(0,0,0,0.08)",
     position: "relative",
     width: "100%",
+    maxWidth: "100%",
     boxSizing: "border-box",
   }),
   tanqueHeader: {
@@ -34,7 +38,7 @@ const styles = {
     marginBottom: "18px",
   },
   tanqueNombre: {
-    fontSize: "1.6rem",
+    fontSize: "2.2rem",
     fontWeight: "900",
     color: "#0f172a",
     textAlign: "center",
@@ -85,15 +89,9 @@ const styles = {
     marginBottom: "24px",
   },
   cantidadActualText: {
-    fontSize: "2.2rem",
+    fontSize: "3.2rem",
     fontWeight: "900",
     color: "#0f172a",
-  },
-  capacidadMaxText: {
-    fontSize: "1rem",
-    color: "#64748b",
-    fontWeight: "700",
-    marginTop: "4px",
   },
   botonesAccion: {
     display: "flex",
@@ -102,29 +100,31 @@ const styles = {
   },
   btnCargarStock: {
     flex: 1,
-    padding: "18px",
+    padding: "24px",
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
     borderRadius: "16px",
-    fontSize: "1.15rem",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 6px 20px rgba(5, 150, 105, 0.4)",
     letterSpacing: "0.5px",
+    boxSizing: "border-box",
   },
   btnUsarStock: {
     flex: 1,
-    padding: "18px",
+    padding: "24px",
     backgroundColor: "#dc2626",
     color: "#ffffff",
     border: "none",
     borderRadius: "16px",
-    fontSize: "1.15rem",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 6px 20px rgba(220, 38, 38, 0.4)",
     letterSpacing: "0.5px",
+    boxSizing: "border-box",
   },
   modalOverlay: {
     position: "fixed",
@@ -144,11 +144,12 @@ const styles = {
     backgroundColor: "#ffffff",
     padding: "45px 36px",
     borderRadius: "32px",
-    maxWidth: "520px",
+    maxWidth: "560px",
     width: "100%",
     boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
     position: "relative",
     border: "3px solid #64748b",
+    boxSizing: "border-box",
   },
   btnCloseX: {
     position: "absolute",
@@ -157,9 +158,9 @@ const styles = {
     background: "#f1f5f9",
     border: "2px solid #cbd5e1",
     borderRadius: "50%",
-    width: "48px",
-    height: "48px",
-    fontSize: "1.6rem",
+    width: "52px",
+    height: "52px",
+    fontSize: "1.8rem",
     fontWeight: "900",
     color: "#0f172a",
     cursor: "pointer",
@@ -172,50 +173,56 @@ const styles = {
     flexDirection: "column",
     gap: "12px",
     marginBottom: "28px",
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
   },
   label: {
-    fontSize: "1.2rem",
+    fontSize: "2.3rem",
     fontWeight: "900",
     color: "#0f172a",
     textTransform: "uppercase",
     letterSpacing: "0.8px",
   },
   input: {
-    padding: "22px 20px",
-    borderRadius: "16px",
+    padding: "30px 22px",
+    borderRadius: "18px",
     border: "3px solid #64748b",
-    fontSize: "1.2rem",
+    fontSize: "25px" /* LETRA CONFIGURADA A 25PX */,
     fontWeight: "900",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     boxSizing: "border-box",
     width: "100%",
+    maxWidth: "100%",
     outline: "none",
   },
   btnModalSubmit: (isReponer) => ({
     flex: 1,
-    padding: "22px",
+    padding: "26px",
     backgroundColor: isReponer ? "#059669" : "#dc2626",
     color: "#fff",
     border: "none",
-    borderRadius: "16px",
-    fontSize: "1.25rem",
+    borderRadius: "18px",
+    fontSize: "2.0rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: isReponer
       ? "0 8px 25px rgba(5,150,105,0.4)"
       : "0 8px 25px rgba(220,38,38,0.4)",
     letterSpacing: "0.5px",
+    boxSizing: "border-box",
   }),
   btnModalCancel: {
-    padding: "22px 24px",
+    padding: "26px 28px",
     backgroundColor: "#e2e8f0",
     color: "#334155",
-    border: "2px solid #cbd5e1",
-    borderRadius: "16px",
-    fontSize: "1.2rem",
+    border: "3px solid #cbd5e1",
+    borderRadius: "18px",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
+    boxSizing: "border-box",
   },
   alertaBox: {
     backgroundColor: "#fef2f2",
@@ -223,7 +230,7 @@ const styles = {
     color: "#991b1b",
     padding: "16px 20px",
     borderRadius: "14px",
-    fontSize: "1.1rem",
+    fontSize: "1.5rem",
     marginBottom: "24px",
     fontWeight: "900",
     textAlign: "center",
@@ -238,10 +245,10 @@ const styles = {
     gap: "8px",
   },
   toast: (tipo) => ({
-    padding: "14px 22px",
+    padding: "16px 24px",
     borderRadius: "12px",
     color: "#fff",
-    fontSize: "1.05rem",
+    fontSize: "1.4rem",
     fontWeight: "800",
     boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
     backgroundColor: tipo === "error" ? "#dc2626" : "#059669",
@@ -428,11 +435,11 @@ export default function Insumos({ empleadoId, maquinaId }) {
               {stockActual <= umbralAlerta && stockActual > 0 && (
                 <div
                   style={{
-                    fontSize: "0.95rem",
+                    fontSize: "1.2rem",
                     backgroundColor: "#fee2e2",
                     color: "#991b1b",
-                    padding: "8px 14px",
-                    borderRadius: "10px",
+                    padding: "10px 16px",
+                    borderRadius: "12px",
                     marginBottom: "16px",
                     fontWeight: "900",
                   }}
@@ -457,9 +464,6 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div style={styles.infoTotales}>
                 <div style={styles.cantidadActualText}>
                   {stockActual.toLocaleString()} L
-                </div>
-                <div style={styles.capacidadMaxText}>
-                  Capacidad ref: {capacidadMaxRef} L
                 </div>
               </div>
 
@@ -506,7 +510,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
               style={{
                 marginBottom: "12px",
                 color: "#0f172a",
-                fontSize: "1.7rem",
+                fontSize: "2.2rem",
                 fontWeight: "900",
               }}
             >
@@ -514,7 +518,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </h3>
             <p
               style={{
-                fontSize: "1.15rem",
+                fontSize: "1.5rem",
                 color: "#64748b",
                 marginBottom: "28px",
                 fontWeight: "800",
@@ -529,7 +533,9 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div style={styles.formGroup}>
                 <label style={styles.label}>Cantidad a Ingresar *</label>
                 <input
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="Ej: 200"
                   required
                   value={cantidadCargar}
@@ -584,7 +590,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
               style={{
                 marginBottom: "12px",
                 color: "#0f172a",
-                fontSize: "1.7rem",
+                fontSize: "2.2rem",
                 fontWeight: "900",
               }}
             >
@@ -592,7 +598,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </h3>
             <p
               style={{
-                fontSize: "1.15rem",
+                fontSize: "1.5rem",
                 color: "#64748b",
                 marginBottom: "28px",
                 fontWeight: "800",
@@ -610,7 +616,9 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div style={styles.formGroup}>
                 <label style={styles.label}>Cantidad a Retirar *</label>
                 <input
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="Ej: 50"
                   required
                   value={cantidadUsar}

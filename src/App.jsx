@@ -124,7 +124,7 @@ export default function App() {
             marginTop: "20px",
             color: "#34d399",
             fontWeight: "800",
-            fontSize: "1.4rem",
+            fontSize: "1.7rem",
           }}
         >
           Cargando sistema...
@@ -245,14 +245,23 @@ export default function App() {
                   style={styles.selectLarge}
                   disabled={sesionIniciada}
                 >
-                  <option value="">-- Seleccionar Operario --</option>
+                  <option
+                    value=""
+                    style={{ fontSize: "10px", padding: "12px" }}
+                  >
+                    -- Seleccionar Operario --
+                  </option>
                   {empleados.map((emp) => {
                     const nombreMostrar =
                       emp.nombre || emp.apellido
                         ? `${emp.nombre || ""} ${emp.apellido || ""}`.trim()
-                        : emp.username || `Empleado #${emp.id}`;
+                        : emp.username;
                     return (
-                      <option key={emp.id} value={emp.id}>
+                      <option
+                        key={emp.id}
+                        value={emp.id}
+                        style={{ fontSize: "10px", padding: "12px" }}
+                      >
                         {nombreMostrar}
                       </option>
                     );
@@ -269,9 +278,18 @@ export default function App() {
                   style={styles.selectLarge}
                   disabled={sesionIniciada}
                 >
-                  <option value="">-- Seleccionar Máquina --</option>
+                  <option
+                    value=""
+                    style={{ fontSize: "10px", padding: "12px" }}
+                  >
+                    -- Seleccionar Máquina --
+                  </option>
                   {maquinas.map((maq) => (
-                    <option key={maq.id} value={maq.id}>
+                    <option
+                      key={maq.id}
+                      value={maq.id}
+                      style={{ fontSize: "10px", padding: "12px" }}
+                    >
                       {maq.nombre ||
                         maq.modelo ||
                         maq.patente ||
@@ -339,7 +357,7 @@ export default function App() {
                     style={{
                       color: "#34d399",
                       fontWeight: "900",
-                      fontSize: "1.1rem",
+                      fontSize: "1.7rem",
                       textTransform: "uppercase",
                     }}
                   >
@@ -418,7 +436,7 @@ const styles = {
     marginBottom: "12px",
   },
   headerSubtitle: {
-    fontSize: "1.1rem",
+    fontSize: "1.9rem",
     textTransform: "uppercase",
     letterSpacing: "3px",
     color: "#34d399",
@@ -436,7 +454,7 @@ const styles = {
   },
   tituloHeader: {
     margin: 0,
-    fontSize: "2.4rem",
+    fontSize: "3.4rem",
     fontWeight: "900",
     color: "#ffffff",
     letterSpacing: "1px",
@@ -457,7 +475,7 @@ const styles = {
   infoModuloTexto: {
     display: "flex",
     gap: "16px",
-    fontSize: "1rem",
+    fontSize: "1.4rem",
     fontWeight: "800",
   },
   content: {
@@ -495,7 +513,7 @@ const styles = {
     boxShadow: "0 0 15px #059669",
   },
   bannerText: {
-    fontSize: "1.25rem",
+    fontSize: "1.6rem",
     fontWeight: "900",
     color: "#059669",
     letterSpacing: "1px",
@@ -518,14 +536,14 @@ const styles = {
     marginTop: "25px",
   },
   label: {
-    fontSize: "1.3rem",
+    fontSize: "2.3rem",
     fontWeight: "900",
     color: "#0f172a",
     textTransform: "uppercase",
     letterSpacing: "0.8px",
   },
   labelCentered: {
-    fontSize: "1.3rem",
+    fontSize: "2.3rem",
     fontWeight: "900",
     color: "#0f172a",
     textTransform: "uppercase",
@@ -533,10 +551,10 @@ const styles = {
     textAlign: "center",
   },
   inputSmallKey: {
-    padding: "24px",
+    padding: "28px 24px",
     borderRadius: "18px",
-    border: "2px solid #64748b",
-    fontSize: "16px",
+    border: "3px solid #64748b",
+    fontSize: "25px",
     fontWeight: "900",
     textAlign: "center",
     letterSpacing: "12px",
@@ -544,7 +562,7 @@ const styles = {
     color: "#0f172a",
     outline: "none",
     width: "100%",
-    maxWidth: "300px",
+    maxWidth: "340px",
     boxSizing: "border-box",
   },
   errorText: {
@@ -553,16 +571,23 @@ const styles = {
     fontWeight: "900",
   },
   selectLarge: {
-    padding: "26px 22px",
+    padding: "30px 22px",
     borderRadius: "18px",
-    border: "2px solid #64748b",
-    fontSize: "16px",
+    border: "3px solid #64748b",
+    fontSize: "25px",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
-    fontWeight: "800",
+    fontWeight: "900",
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24'><path fill='%230f172a' d='M7 10l5 5 5-5z'/></svg>")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 22px center",
+    backgroundSize: "32px",
   },
   checkboxContainer: {
     margin: "35px 0 45px 0",
@@ -571,7 +596,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "20px",
-    fontSize: "1.3rem",
+    fontSize: "2.3rem",
     color: "#334155",
     cursor: "pointer",
     fontWeight: "800",
@@ -583,7 +608,7 @@ const styles = {
     color: "#fff",
     border: "none",
     borderRadius: "22px",
-    fontSize: "1.45rem",
+    fontSize: "2.45rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 12px 35px rgba(5, 150, 105, 0.5)",
@@ -608,7 +633,7 @@ const styles = {
     border: "1px solid #f87171",
     padding: "8px 14px",
     borderRadius: "8px",
-    fontSize: "0.85rem",
+    fontSize: "1.85rem",
     fontWeight: "800",
     cursor: "pointer",
   },
@@ -655,12 +680,12 @@ const styles = {
     padding: "12px 20px",
     borderRadius: "12px",
     fontWeight: "900",
-    fontSize: "1.1rem",
+    fontSize: "1.9rem",
     cursor: "pointer",
   },
   tituloForm: {
     margin: 0,
-    fontSize: "2.3rem",
+    fontSize: "2.8rem",
     color: "#0f172a",
     fontWeight: "900",
   },

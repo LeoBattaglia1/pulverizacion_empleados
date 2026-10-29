@@ -308,9 +308,6 @@ export default function CargarTrabajo({
   return (
     <div style={{ position: "relative", width: "100%" }}>
       <div style={styles.headerForm}>
-        <button onClick={onVolver} style={styles.btnVolver}>
-          ← Volver
-        </button>
         <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
       </div>
 
@@ -319,7 +316,7 @@ export default function CargarTrabajo({
           1. Ubicación y Fecha
         </div>
         <span
-          style={{ color: "#94a3b8", fontSize: "1.2rem", fontWeight: "900" }}
+          style={{ color: "#94a3b8", fontSize: "1.4rem", fontWeight: "900" }}
         >
           ➔
         </span>
@@ -350,13 +347,24 @@ export default function CargarTrabajo({
                 style={styles.select}
                 required
               >
-                <option value="">-- Seleccionar Cliente --</option>
+                <option value="" style={{ fontSize: "10px", padding: "12px" }}>
+                  -- Seleccionar Cliente --
+                </option>
                 {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option
+                    key={c.id}
+                    value={c.id}
+                    style={{ fontSize: "10px", padding: "12px" }}
+                  >
                     {c.nombre}
                   </option>
                 ))}
-                <option value="nuevo">+ Nuevo Cliente...</option>
+                <option
+                  value="nuevo"
+                  style={{ fontSize: "10px", padding: "12px" }}
+                >
+                  + Nuevo Cliente...
+                </option>
               </select>
 
               {clienteId === "nuevo" && (
@@ -395,16 +403,27 @@ export default function CargarTrabajo({
                 disabled={!clienteId || clienteId === "nuevo"}
                 required
               >
-                <option value="">-- Seleccionar Campo --</option>
+                <option value="" style={{ fontSize: "10px", padding: "12px" }}>
+                  -- Seleccionar Campo --
+                </option>
                 {campos
                   .filter((c) => Number(c.cliente_id) === Number(clienteId))
                   .map((c) => (
-                    <option key={c.id} value={c.id}>
+                    <option
+                      key={c.id}
+                      value={c.id}
+                      style={{ fontSize: "10px", padding: "12px" }}
+                    >
                       {c.nombre}
                     </option>
                   ))}
                 {clienteId && clienteId !== "nuevo" && (
-                  <option value="nuevo">+ Nuevo Campo...</option>
+                  <option
+                    value="nuevo"
+                    style={{ fontSize: "10px", padding: "12px" }}
+                  >
+                    + Nuevo Campo...
+                  </option>
                 )}
               </select>
 
@@ -495,7 +514,9 @@ export default function CargarTrabajo({
                           Hectáreas Realizadas *
                         </label>
                         <input
-                          type="text"
+                          type="number"
+                          inputMode="decimal"
+                          pattern="[0-9]*"
                           placeholder="0"
                           value={datos.hectareas}
                           onChange={(e) =>
@@ -524,13 +545,48 @@ export default function CargarTrabajo({
                           style={styles.select}
                           required
                         >
-                          <option value="">Seleccionar...</option>
-                          <option value="Barbecho">Barbecho</option>
-                          <option value="Pre-emergente">Pre-emergente</option>
-                          <option value="Post-emergente">Post-emergente</option>
-                          <option value="Clearsol">Clearsol</option>
-                          <option value="Hoja Ancha">Hoja Ancha</option>
-                          <option value="otro">Otro</option>
+                          <option
+                            value=""
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Seleccionar...
+                          </option>
+                          <option
+                            value="Barbecho"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Barbecho
+                          </option>
+                          <option
+                            value="Pre-emergente"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Pre-emergente
+                          </option>
+                          <option
+                            value="Post-emergente"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Post-emergente
+                          </option>
+                          <option
+                            value="Clearsol"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Clearsol
+                          </option>
+                          <option
+                            value="Hoja Ancha"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Hoja Ancha
+                          </option>
+                          <option
+                            value="otro"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Otro
+                          </option>
                         </select>
                         {datos.tratamiento === "otro" && (
                           <input
@@ -564,15 +620,60 @@ export default function CargarTrabajo({
                           style={styles.select}
                           required
                         >
-                          <option value="">Seleccionar...</option>
-                          <option value="Girasol">Girasol</option>
-                          <option value="Maíz">Maíz</option>
-                          <option value="Soja">Soja</option>
-                          <option value="Trigo">Trigo</option>
-                          <option value="Sorgo">Sorgo</option>
-                          <option value="Avena">Avena</option>
-                          <option value="Cebada">Cebada</option>
-                          <option value="otro">Otro</option>
+                          <option
+                            value=""
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Seleccionar...
+                          </option>
+                          <option
+                            value="Girasol"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Girasol
+                          </option>
+                          <option
+                            value="Maíz"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Maíz
+                          </option>
+                          <option
+                            value="Soja"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Soja
+                          </option>
+                          <option
+                            value="Trigo"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Trigo
+                          </option>
+                          <option
+                            value="Sorgo"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Sorgo
+                          </option>
+                          <option
+                            value="Avena"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Avena
+                          </option>
+                          <option
+                            value="Cebada"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Cebada
+                          </option>
+                          <option
+                            value="otro"
+                            style={{ fontSize: "10px", padding: "12px" }}
+                          >
+                            Otro
+                          </option>
                         </select>
                         {datos.tipoCultivo === "otro" && (
                           <input
@@ -621,7 +722,7 @@ export default function CargarTrabajo({
         <div style={styles.toastAlert}>
           <div>
             <strong>Guardar trabajo</strong>
-            <div style={{ fontSize: "1rem", color: "#059669" }}>
+            <div style={{ fontSize: "1.2rem", color: "#059669" }}>
               Operación exitosa
             </div>
           </div>
@@ -635,24 +736,14 @@ const styles = {
   headerForm: {
     display: "flex",
     alignItems: "center",
-    gap: "20px",
+    justifyContent: "flex-start",
     marginBottom: "30px",
     borderBottom: "3px solid #f1f5f9",
     paddingBottom: "20px",
   },
-  btnVolver: {
-    backgroundColor: "rgba(0,0,0,0.06)",
-    color: "#0f172a",
-    border: "1px solid #cbd5e1",
-    padding: "10px 16px",
-    borderRadius: "10px",
-    fontWeight: "800",
-    fontSize: "1rem",
-    cursor: "pointer",
-  },
   tituloForm: {
     margin: 0,
-    fontSize: "2.1rem",
+    fontSize: "2.8rem",
     color: "#0f172a",
     fontWeight: "900",
   },
@@ -666,9 +757,9 @@ const styles = {
     width: "100%",
   },
   stepBadge: (activo, completado) => ({
-    padding: "10px 18px",
+    padding: "12px 20px",
     borderRadius: "20px",
-    fontSize: "1rem",
+    fontSize: "1.2rem",
     fontWeight: "900",
     backgroundColor: activo ? "#059669" : completado ? "#d1fae5" : "#f1f5f9",
     color: activo ? "#ffffff" : completado ? "#065f46" : "#64748b",
@@ -682,41 +773,49 @@ const styles = {
     boxSizing: "border-box",
   },
   label: {
-    fontSize: "1.2rem",
+    fontSize: "2.3rem",
     fontWeight: "900",
     color: "#0f172a",
     textTransform: "uppercase",
     letterSpacing: "0.8px",
   },
   subLabel: {
-    fontSize: "1.05rem",
+    fontSize: "1.8rem",
     fontWeight: "900",
     color: "#334155",
     textTransform: "uppercase",
   },
   input: {
-    padding: "22px 20px",
+    padding: "30px 22px",
     borderRadius: "18px",
-    border: "2px solid #64748b",
+    border: "3px solid #64748b",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px",
-    fontWeight: "800",
+    fontSize: "25px",
+    fontWeight: "900",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
+    appearance: "none",
   },
   select: {
-    padding: "22px 20px",
+    padding: "30px 22px",
     borderRadius: "18px",
-    border: "2px solid #64748b",
+    border: "3px solid #64748b",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px",
-    fontWeight: "800",
+    fontSize: "25px",
+    fontWeight: "900",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
+    appearance: "none",
+    WebkitAppearance: "none",
+    MozAppearance: "none",
+    backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24'><path fill='%230f172a' d='M7 10l5 5 5-5z'/></svg>")`,
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right 22px center",
+    backgroundSize: "32px",
   },
   subFormContainer: {
     display: "flex",
@@ -731,30 +830,30 @@ const styles = {
     boxSizing: "border-box",
   },
   btnSecundarioAccion: {
-    padding: "18px",
+    padding: "24px",
     backgroundColor: "#059669",
     color: "#fff",
     border: "none",
     borderRadius: "14px",
     fontWeight: "900",
     cursor: "pointer",
-    fontSize: "1.1rem",
+    fontSize: "1.8rem",
   },
   lotesGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
-    gap: "12px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+    gap: "14px",
     margin: "10px 0",
     width: "100%",
   },
   loteChip: (seleccionado) => ({
-    padding: "16px 12px",
-    borderRadius: "14px",
+    padding: "20px 14px",
+    borderRadius: "16px",
     border: `3px solid ${seleccionado ? "#059669" : "#cbd5e1"}`,
     backgroundColor: seleccionado ? "#ecfdf5" : "#ffffff",
     color: seleccionado ? "#065f46" : "#334155",
     fontWeight: "900",
-    fontSize: "1.05rem",
+    fontSize: "1.4rem",
     textAlign: "center",
     cursor: "pointer",
     boxShadow: seleccionado ? "0 4px 12px rgba(5,150,105,0.2)" : "none",
@@ -767,50 +866,50 @@ const styles = {
   },
   inputSmall: {
     flex: 1,
-    padding: "18px 20px",
-    borderRadius: "14px",
-    border: "2px solid #cbd5e1",
+    padding: "26px 22px",
+    borderRadius: "16px",
+    border: "3px solid #cbd5e1",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px",
-    fontWeight: "800",
+    fontSize: "25px",
+    fontWeight: "900",
     outline: "none",
   },
   btnAgregarLote: {
-    padding: "18px 24px",
+    padding: "26px 30px",
     backgroundColor: "#059669",
     color: "#fff",
     border: "none",
-    borderRadius: "14px",
+    borderRadius: "16px",
     fontWeight: "900",
-    fontSize: "1.1rem",
+    fontSize: "1.8rem",
     cursor: "pointer",
   },
   lotesCardContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "24px",
     margin: "24px 0",
     width: "100%",
   },
   loteDetailCard: {
     backgroundColor: "#f8fafc",
-    border: "2px solid #cbd5e1",
-    borderRadius: "20px",
-    padding: "24px",
+    border: "3px solid #cbd5e1",
+    borderRadius: "24px",
+    padding: "28px",
     display: "flex",
     flexDirection: "column",
-    gap: "18px",
+    gap: "20px",
     width: "100%",
     boxSizing: "border-box",
     boxShadow: "0 8px 20px rgba(0,0,0,0.04)",
   },
   loteTitle: {
-    fontSize: "1.25rem",
+    fontSize: "1.8rem",
     fontWeight: "900",
     color: "#065f46",
-    borderBottom: "2px solid #cbd5e1",
-    paddingBottom: "10px",
+    borderBottom: "3px solid #cbd5e1",
+    paddingBottom: "12px",
     textTransform: "uppercase",
   },
   fieldSubGroup: {
@@ -820,10 +919,10 @@ const styles = {
     width: "100%",
   },
   inputNumberBig: {
-    padding: "20px",
-    borderRadius: "14px",
-    border: "3px solid #059669",
-    fontSize: "1.5rem",
+    padding: "30px",
+    borderRadius: "16px",
+    border: "4px solid #059669",
+    fontSize: "25px",
     fontWeight: "900",
     color: "#065f46",
     backgroundColor: "#ecfdf5",
@@ -839,12 +938,12 @@ const styles = {
   },
   btnSiguienteFull: (isDisabled) => ({
     width: "100%",
-    padding: "26px",
+    padding: "32px",
     backgroundColor: isDisabled ? "#cbd5e1" : "#059669",
     color: "#fff",
     border: "none",
     borderRadius: "20px",
-    fontSize: "1.3rem",
+    fontSize: "2.2rem",
     fontWeight: "900",
     cursor: isDisabled ? "not-allowed" : "pointer",
     boxShadow: isDisabled ? "none" : "0 10px 30px rgba(5, 150, 105, 0.4)",
@@ -858,24 +957,24 @@ const styles = {
     width: "100%",
   },
   btnAtrasSmall: {
-    padding: "22px 24px",
+    padding: "28px 30px",
     backgroundColor: "#e2e8f0",
     color: "#334155",
-    border: "2px solid #cbd5e1",
+    border: "3px solid #cbd5e1",
     borderRadius: "18px",
-    fontSize: "1.1rem",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
     flexShrink: 0,
   },
   btnSubmitFull: (activo) => ({
     flex: 1,
-    padding: "26px",
+    padding: "32px",
     backgroundColor: activo ? "#059669" : "#cbd5e1",
     color: "#ffffff",
     border: "none",
     borderRadius: "20px",
-    fontSize: "1.3rem",
+    fontSize: "2.2rem",
     fontWeight: "900",
     cursor: activo ? "pointer" : "not-allowed",
     boxShadow: activo ? "0 10px 30px rgba(5, 150, 105, 0.4)" : "none",
@@ -888,17 +987,17 @@ const styles = {
     transform: "translateX(-50%)",
     backgroundColor: "#0f172a",
     color: "#ffffff",
-    padding: "18px 24px",
-    borderRadius: "16px",
+    padding: "20px 28px",
+    borderRadius: "18px",
     display: "flex",
     alignItems: "center",
     gap: "14px",
     boxShadow: "0 12px 35px rgba(0, 0, 0, 0.5)",
     zIndex: 2000,
-    fontSize: "1.1rem",
+    fontSize: "1.5rem",
     borderLeft: "6px solid #10b981",
     border: "1px solid #1e293b",
-    minWidth: "300px",
+    minWidth: "320px",
     textAlign: "center",
   },
 };
