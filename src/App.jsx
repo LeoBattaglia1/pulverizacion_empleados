@@ -372,8 +372,7 @@ export default function App() {
 
 const styles = {
   appMobile: {
-    maxWidth: "480px",
-    margin: "0 auto",
+    width: "100%",
     minHeight: "100vh",
     backgroundColor: "#f1f5f9",
     backgroundImage: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
