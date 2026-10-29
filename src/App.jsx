@@ -190,7 +190,7 @@ export default function App() {
             onClick={() => setModalMenuAbierto(true)}
             style={styles.btnAbrirMenuFlotante}
           >
-            Menú Principal
+            Volver al Menú Principal
           </button>
         </div>
       )}
@@ -198,14 +198,6 @@ export default function App() {
       <main style={styles.content}>
         {vistaActiva === "trabajo" ? (
           <div style={styles.formCard}>
-            <div style={styles.headerForm}>
-              <button
-                onClick={() => setModalMenuAbierto(true)}
-                style={styles.btnVolver}
-              >
-                ← Menú Principal
-              </button>
-            </div>
             <CargarTrabajo
               empleadoId={empleadoSeleccionado}
               maquinaId={maquinaSeleccionada}
@@ -215,14 +207,8 @@ export default function App() {
             />
           </div>
         ) : vistaActiva === "consumo" ? (
-          <div style={styles.formCard}>
+          <div style={styles.formCardGrande}>
             <div style={styles.headerForm}>
-              <button
-                onClick={() => setModalMenuAbierto(true)}
-                style={styles.btnVolver}
-              >
-                ← Menú Principal
-              </button>
               <h2 style={styles.tituloForm}>Consumos</h2>
             </div>
             <Insumos
@@ -359,7 +345,7 @@ export default function App() {
 
       {modalTecladoAbierto && (
         <div style={styles.modalOverlay}>
-          <div style={styles.modalTecladoCardFull}>
+          <div style={styles.modalTecladoCard}>
             <div style={styles.modalTecladoHeader}>
               <span style={styles.modalTecladoTitulo}>Ingrese Clave</span>
               <button
@@ -381,7 +367,7 @@ export default function App() {
               )}
             </div>
 
-            <div style={styles.tecladoGridModalFull}>
+            <div style={styles.tecladoGridModal}>
               {[
                 "1",
                 "2",
@@ -397,14 +383,14 @@ export default function App() {
                 "ok",
               ].map((tecla) => {
                 let textoBoton = tecla;
-                let estiloBoton = styles.teclaBtnModalFull;
+                let estiloBoton = styles.teclaBtnModal;
 
                 if (tecla === "borrar") {
                   textoBoton = "⌫";
-                  estiloBoton = styles.teclaBorrarModalFull;
+                  estiloBoton = styles.teclaBorrarModal;
                 } else if (tecla === "ok") {
                   textoBoton = "✓ OK";
-                  estiloBoton = styles.teclaOkModalFull;
+                  estiloBoton = styles.teclaOkModal;
                 }
 
                 return (
@@ -437,20 +423,11 @@ export default function App() {
                 style={{
                   color: "#34d399",
                   fontWeight: "900",
-                  fontSize: "2rem",
+                  fontSize: "3rem",
                   textTransform: "uppercase",
                 }}
               >
                 ✓ Acceso Habilitado
-              </span>
-              <span
-                style={{
-                  fontSize: "1.6rem",
-                  color: "#94a3b8",
-                  fontWeight: "700",
-                }}
-              >
-                {nombreEmpleado} | {nombreMaquina}
               </span>
             </div>
 
@@ -470,7 +447,7 @@ export default function App() {
                   setModalMenuAbierto(false);
                   setVistaActiva("consumo");
                 }}
-                style={styles.btnMenuModalSecondary}
+                style={styles.btnMenuModalYellow}
               >
                 CONSUMOS
               </button>
@@ -478,9 +455,9 @@ export default function App() {
 
             <div
               style={{
-                marginTop: "15px",
+                marginTop: "25px",
                 borderTop: "2px solid #334155",
-                paddingTop: "25px",
+                paddingTop: "30px",
               }}
             >
               <button onClick={handleSalirSesion} style={styles.btnSalirModal}>
@@ -566,8 +543,9 @@ const styles = {
     color: "#ffffff",
     padding: "16px 24px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column", // Pone el botón debajo si no entra a lo ancho
+    alignItems: "stretch",
+    gap: "14px",
     borderBottom: "2px solid #34d399",
     width: "100%",
     boxSizing: "border-box",
@@ -579,16 +557,20 @@ const styles = {
     fontSize: "1.4rem",
     fontWeight: "800",
     flexWrap: "wrap",
+    justifyContent: "center",
+    textAlign: "center",
   },
   btnAbrirMenuFlotante: {
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
-    padding: "10px 18px",
-    borderRadius: "10px",
-    fontSize: "1.5rem",
+    padding: "16px 20px",
+    borderRadius: "14px",
+    fontSize: "1.6rem",
     fontWeight: "900",
     cursor: "pointer",
+    width: "100%",
+    boxSizing: "border-box",
   },
   content: {
     padding: "45px 20px",
@@ -608,6 +590,17 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
     transition: "all 0.3s ease",
+  },
+  formCardGrande: {
+    backgroundColor: "#ffffff",
+    padding: "60px 40px",
+    borderRadius: "32px",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+    border: "1px solid #cbd5e1",
+    width: "100%",
+    maxWidth: "1400px",
+    margin: "0 auto",
+    boxSizing: "border-box",
   },
   loginBannerDecorativo: {
     display: "flex",
@@ -694,7 +687,7 @@ const styles = {
     zIndex: 9999,
     boxSizing: "border-box",
   },
-  modalTecladoCardFull: {
+  modalTecladoCard: {
     backgroundColor: "#ffffff",
     padding: "35px 24px 50px 24px",
     borderRadius: "36px 36px 0 0",
@@ -750,13 +743,13 @@ const styles = {
     justifyContent: "center",
     boxSizing: "border-box",
   },
-  tecladoGridModalFull: {
+  tecladoGridModal: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
     gap: "16px",
     width: "100%",
   },
-  teclaBtnModalFull: {
+  teclaBtnModal: {
     padding: "32px 10px",
     fontSize: "2.8rem",
     fontWeight: "900",
@@ -768,7 +761,7 @@ const styles = {
     boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
     textAlign: "center",
   },
-  teclaBorrarModalFull: {
+  teclaBorrarModal: {
     padding: "32px 10px",
     fontSize: "2.6rem",
     fontWeight: "900",
@@ -780,7 +773,7 @@ const styles = {
     boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
     textAlign: "center",
   },
-  teclaOkModalFull: {
+  teclaOkModal: {
     padding: "32px 10px",
     fontSize: "2.4rem",
     fontWeight: "900",
@@ -794,12 +787,14 @@ const styles = {
   },
   modalMenuCardFull: {
     backgroundColor: "#0f172a",
-    padding: "55px 35px",
+    padding: "60px 40px",
     borderRadius: "36px",
-    width: "94%",
-    maxWidth: "580px",
-    boxShadow: "0 30px 70px rgba(0,0,0,0.7)",
-    border: "4px solid #34d399",
+    width: "95%",
+    maxWidth: "800px",
+    maxHeight: "95vh",
+    overflowY: "auto",
+    boxShadow: "0 30px 90px rgba(0,0,0,0.85)",
+    border: "5px solid #34d399",
     display: "flex",
     flexDirection: "column",
     gap: "35px",
@@ -817,37 +812,37 @@ const styles = {
   menuBotonesContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "24px",
+    gap: "24px", // Botones más separados
   },
   btnMenuModalPrimary: {
     width: "100%",
-    padding: "45px 20px",
+    padding: "42px 20px", // Botones ligeramente más chicos y cómodos
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
-    borderRadius: "24px",
+    borderRadius: "22px",
     fontSize: "2.5rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 12px 35px rgba(5, 150, 105, 0.5)",
     textAlign: "center",
   },
-  btnMenuModalSecondary: {
+  btnMenuModalYellow: {
     width: "100%",
-    padding: "45px 20px",
-    backgroundColor: "#334155",
+    padding: "42px 20px",
+    backgroundColor: "#d97706",
     color: "#ffffff",
     border: "none",
-    borderRadius: "24px",
+    borderRadius: "22px",
     fontSize: "2.5rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 12px 35px rgba(51, 65, 85, 0.5)",
+    boxShadow: "0 12px 35px rgba(217, 119, 6, 0.5)",
     textAlign: "center",
   },
   btnSalirModal: {
     width: "100%",
-    padding: "30px",
+    padding: "32px",
     backgroundColor: "#dc2626",
     color: "#ffffff",
     border: "none",

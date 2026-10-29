@@ -27,6 +27,7 @@ export default function CargarTrabajo({
   const [nuevoLoteNombre, setNuevoLoteNombre] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [mostrarAlertaExito, setMostrarAlertaExito] = useState(false);
+  const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("");
 
   const [tecladoHectareasAbierto, setTecladoHectareasAbierto] = useState(false);
   const [loteActualId, setLoteActualId] = useState(null);
@@ -55,12 +56,14 @@ export default function CargarTrabajo({
     setNuevoClienteNombre("");
     setNuevoCampoNombre("");
     setLotesSeleccionadosData({});
+    setMensajeErrorValidacion("");
   };
 
   const handleCampoChange = (e) => {
     setCampoId(e.target.value);
     setNuevoCampoNombre("");
     setLotesSeleccionadosData({});
+    setMensajeErrorValidacion("");
   };
 
   const confirmarCrearCliente = async () => {
@@ -68,6 +71,19 @@ export default function CargarTrabajo({
     const nombreCmp = nuevoCampoNombre.trim();
 
     if (!nombreCli || !nombreCmp) return;
+    setMensajeErrorValidacion("");
+
+    // Validar si ya existe un cliente con el mismo nombre (ignorando mayúsculas/minúsculas)
+    const clienteExistente = clientes.some(
+      (c) => c.nombre.trim().toLowerCase() === nombreCli.toLowerCase(),
+    );
+
+    if (clienteExistente) {
+      setMensajeErrorValidacion(
+        `El cliente "${nombreCli}" ya existe en el sistema.`,
+      );
+      return;
+    }
 
     try {
       const resCli = await api.post("/clientes", { nombre: nombreCli });
@@ -100,6 +116,21 @@ export default function CargarTrabajo({
   const confirmarCrearCampo = async () => {
     const nombreCmp = nuevoCampoNombre.trim();
     if (!nombreCmp || !clienteId) return;
+    setMensajeErrorValidacion("");
+
+    // Validar si ya existe un campo con ese nombre para este cliente
+    const campoExistente = campos.some(
+      (c) =>
+        Number(c.cliente_id) === Number(clienteId) &&
+        c.nombre.trim().toLowerCase() === nombreCmp.toLowerCase(),
+    );
+
+    if (campoExistente) {
+      setMensajeErrorValidacion(
+        `El campo "${nombreCmp}" ya existe para este cliente.`,
+      );
+      return;
+    }
 
     try {
       const resCmp = await api.post("/campos", {
@@ -200,17 +231,35 @@ export default function CargarTrabajo({
   };
 
   const agregarNuevoLoteDirecto = async () => {
-    if (!nuevoLoteNombre.trim() || !campoId || campoId === "nuevo") return;
+    const nombreLoteStr = nuevoLoteNombre.trim();
+    if (!nombreLoteStr || !campoId || campoId === "nuevo") return;
+    setMensajeErrorValidacion("");
+
+    // Validar si ya existe un lote con ese número/nombre en el campo actual
+    const loteExistente = lotes.some(
+      (l) =>
+        Number(l.campo_id) === Number(campoId) &&
+        String(l.numero_lote).trim().toLowerCase() ===
+          nombreLoteStr.toLowerCase(),
+    );
+
+    if (loteExistente) {
+      setMensajeErrorValidacion(
+        `El lote "${nombreLoteStr}" ya existe en este campo.`,
+      );
+      return;
+    }
+
     try {
       const res = await api.post("/lotes", {
         campo_id: Number(campoId),
-        numero_lote: nuevoLoteNombre.trim(),
+        numero_lote: nombreLoteStr,
       });
 
       const nuevoLoteObj = {
         id: res.data.id || Date.now(),
         campo_id: Number(campoId),
-        numero_lote: nuevoLoteNombre.trim(),
+        numero_lote: nombreLoteStr,
       };
 
       setLotes((prev) => [...prev, nuevoLoteObj]);
@@ -316,7 +365,7 @@ export default function CargarTrabajo({
         enviarNotificacionWhatsApp();
         setMostrarAlertaExito(false);
         onVolver();
-      }, 1200);
+      }, 3200);
     } catch (error) {
       console.error("Error al guardar el trabajo:", error);
     } finally {
@@ -335,6 +384,22 @@ export default function CargarTrabajo({
       <div style={styles.headerForm}>
         <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
       </div>
+
+      {pasoActual === 2 && (
+        <div style={{ marginBottom: "20px" }}>
+          <button
+            type="button"
+            onClick={() => setPasoActual(1)}
+            style={styles.btnVolverPaso1}
+          >
+            ← Volver a Ubicación y Fecha
+          </button>
+        </div>
+      )}
+
+      {mensajeErrorValidacion && (
+        <div style={styles.alertaErrorBox}>⚠️ {mensajeErrorValidacion}</div>
+      )}
 
       <div style={styles.wizardHeader}>
         <div style={styles.stepBadge(pasoActual === 1, pasoActual > 1)}>
@@ -362,7 +427,7 @@ export default function CargarTrabajo({
                 type="date"
                 value={fechaTrabajo}
                 onChange={(e) => setFechaTrabajo(e.target.value)}
-                style={styles.input}
+                style={styles.inputFechaCompacta}
                 required
               />
             </div>
@@ -510,10 +575,10 @@ export default function CargarTrabajo({
               <div style={styles.nuevoLoteRow}>
                 <input
                   type="text"
-                  placeholder="Añadir nuevo lote..."
+                  placeholder="Escribir nombre o número de lote..."
                   value={nuevoLoteNombre}
                   onChange={(e) => setNuevoLoteNombre(e.target.value)}
-                  style={styles.inputSmall}
+                  style={styles.inputLoteLibre}
                 />
                 <button
                   type="button"
@@ -733,7 +798,7 @@ export default function CargarTrabajo({
                 onClick={() => setPasoActual(1)}
                 style={styles.btnAtrasSmall}
               >
-                ← Atrás
+                ← Volver
               </button>
               <button
                 type="submit"
@@ -828,7 +893,9 @@ export default function CargarTrabajo({
         <div style={styles.toastAlert}>
           <div>
             <strong>Guardar trabajo</strong>
-            <div style={{ fontSize: "1.2rem", color: "#059669" }}>
+            <div
+              style={{ fontSize: "1.5rem", color: "#34d399", marginTop: "4px" }}
+            >
               Operación exitosa
             </div>
           </div>
@@ -843,15 +910,37 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-start",
-    marginBottom: "30px",
+    marginBottom: "20px",
     borderBottom: "3px solid #f1f5f9",
-    paddingBottom: "20px",
+    paddingBottom: "15px",
   },
   tituloForm: {
     margin: 0,
     fontSize: "2.8rem",
     color: "#0f172a",
     fontWeight: "900",
+  },
+  btnVolverPaso1: {
+    padding: "16px 24px",
+    backgroundColor: "#e2e8f0",
+    color: "#334155",
+    border: "3px solid #cbd5e1",
+    borderRadius: "16px",
+    fontSize: "1.6rem",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxSizing: "border-box",
+  },
+  alertaErrorBox: {
+    backgroundColor: "#fef2f2",
+    border: "3px solid #fecaca",
+    color: "#991b1b",
+    padding: "16px 20px",
+    borderRadius: "16px",
+    fontSize: "1.6rem",
+    fontWeight: "900",
+    marginBottom: "20px",
+    textAlign: "center",
   },
   wizardHeader: {
     display: "flex",
@@ -901,6 +990,19 @@ const styles = {
     fontWeight: "900",
     width: "100%",
     maxWidth: "100%",
+    boxSizing: "border-box",
+    outline: "none",
+  },
+  inputFechaCompacta: {
+    padding: "22px 20px",
+    borderRadius: "18px",
+    border: "3px solid #64748b",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontSize: "24px",
+    fontWeight: "900",
+    width: "100%",
+    maxWidth: "320px",
     boxSizing: "border-box",
     outline: "none",
   },
@@ -956,14 +1058,14 @@ const styles = {
   loteChip: (seleccionado) => ({
     padding: "20px 14px",
     borderRadius: "16px",
-    border: `3px solid ${seleccionado ? "#059669" : "#cbd5e1"}`,
-    backgroundColor: seleccionado ? "#ecfdf5" : "#ffffff",
-    color: seleccionado ? "#065f46" : "#334155",
+    border: `3px solid ${seleccionado ? "#2563eb" : "#cbd5e1"}`,
+    backgroundColor: seleccionado ? "#eff6ff" : "#ffffff",
+    color: seleccionado ? "#1d4ed8" : "#334155",
     fontWeight: "900",
     fontSize: "1.4rem",
     textAlign: "center",
     cursor: "pointer",
-    boxShadow: seleccionado ? "0 4px 12px rgba(5,150,105,0.2)" : "none",
+    boxShadow: seleccionado ? "0 4px 12px rgba(37,99,235,0.25)" : "none",
     boxSizing: "border-box",
   }),
   nuevoLoteRow: {
@@ -973,14 +1075,14 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
   },
-  inputSmall: {
+  inputLoteLibre: {
     flex: 1,
     padding: "26px 22px",
     borderRadius: "16px",
-    border: "3px solid #cbd5e1",
+    border: "3px solid #64748b",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "25px",
+    fontSize: "22px",
     fontWeight: "900",
     outline: "none",
     boxSizing: "border-box",
@@ -1211,22 +1313,21 @@ const styles = {
   },
   toastAlert: {
     position: "fixed",
-    bottom: "30px",
+    top: "50%",
     left: "50%",
-    transform: "translateX(-50%)",
+    transform: "translate(-50%, -50%)",
     backgroundColor: "#0f172a",
     color: "#ffffff",
-    padding: "20px 28px",
-    borderRadius: "18px",
+    padding: "35px 50px",
+    borderRadius: "24px",
     display: "flex",
+    flexDirection: "column",
     alignItems: "center",
     gap: "14px",
-    boxShadow: "0 12px 35px rgba(0, 0, 0, 0.5)",
-    zIndex: 2000,
-    fontSize: "1.5rem",
-    borderLeft: "6px solid #10b981",
-    border: "1px solid #1e293b",
-    minWidth: "320px",
+    boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+    zIndex: 9999,
+    fontSize: "2.2rem",
+    border: "4px solid #34d399",
     textAlign: "center",
   },
 };

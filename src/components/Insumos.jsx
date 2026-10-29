@@ -142,13 +142,15 @@ const styles = {
   },
   modalCard: {
     backgroundColor: "#ffffff",
-    padding: "55px 35px",
+    padding: "70px 50px", // Mismo tamaño grande que el modal principal
     borderRadius: "36px",
-    maxWidth: "580px",
-    width: "100%",
-    boxShadow: "0 30px 70px rgba(0, 0, 0, 0.5)",
+    maxWidth: "900px", // Ampliado para ocupar gran pantalla
+    width: "95%",
+    maxHeight: "95vh",
+    overflowY: "auto",
+    boxShadow: "0 30px 90px rgba(0, 0, 0, 0.85)",
     position: "relative",
-    border: "4px solid #64748b",
+    border: "5px solid #64748b",
     boxSizing: "border-box",
   },
   btnCloseX: {
