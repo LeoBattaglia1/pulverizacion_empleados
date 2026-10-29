@@ -241,15 +241,12 @@ export default function CargarTrabajo({
     const nombreCampo = campoObj?.nombre || "N/A";
     const cantidadLotes = lotesActivosArray.length;
 
-    // Sumar hectáreas totales de todos los lotes seleccionados
     const totalHectareas = lotesActivosArray.reduce((acc, [, data]) => {
       return acc + (Number(data.hectareas) || 0);
     }, 0);
 
-    // Mensaje exacto solicitado
     const mensaje = `Nuevo trabajo\nFecha: ${fechaTrabajo}\nOperario: ${nombreEmpleado}\nCampo: ${nombreCampo}\nCantidad de lotes: ${cantidadLotes}\nCantidad de hectáreas: ${totalHectareas}`;
 
-    // Enlace nativo para abrir directamente la aplicación de WhatsApp en el celular
     const url = `whatsapp://send?phone=${telefonoWhatsApp}&text=${encodeURIComponent(
       mensaje,
     )}`;
@@ -313,12 +310,24 @@ export default function CargarTrabajo({
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
-      {/* INDICADOR DE PASOS */}
+      {/* ENCABEZADO Y TÍTULO DEL MÓDULO */}
+      <div style={styles.headerForm}>
+        <button onClick={onVolver} style={styles.btnVolver}>
+          ← Volver
+        </button>
+        <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
+      </div>
+
+      {/* INDICADOR DE PASOS GIGANTE */}
       <div style={styles.wizardHeader}>
         <div style={styles.stepBadge(pasoActual === 1, pasoActual > 1)}>
           1. Ubicación y Fecha
         </div>
-        <span style={{ color: "#94a3b8" }}>➔</span>
+        <span
+          style={{ color: "#94a3b8", fontSize: "1.2rem", fontWeight: "900" }}
+        >
+          ➔
+        </span>
         <div style={styles.stepBadge(pasoActual === 2, false)}>
           2. Lotes y Cultivos
         </div>
@@ -542,7 +551,7 @@ export default function CargarTrabajo({
                                 e.target.value,
                               )
                             }
-                            style={{ ...styles.input, marginTop: "6px" }}
+                            style={{ ...styles.input, marginTop: "10px" }}
                             required
                           />
                         )}
@@ -584,7 +593,7 @@ export default function CargarTrabajo({
                                 e.target.value,
                               )
                             }
-                            style={{ ...styles.input, marginTop: "6px" }}
+                            style={{ ...styles.input, marginTop: "10px" }}
                             required
                           />
                         )}
@@ -602,7 +611,7 @@ export default function CargarTrabajo({
                 onClick={() => setPasoActual(1)}
                 style={styles.btnAtrasSmall}
               >
-                Atrás
+                ← Atrás
               </button>
               <button
                 type="submit"
@@ -621,7 +630,7 @@ export default function CargarTrabajo({
         <div style={styles.toastAlert}>
           <div>
             <strong>Guardar trabajo</strong>
-            <div style={{ fontSize: "0.8rem", color: "#059669" }}>
+            <div style={{ fontSize: "1rem", color: "#059669" }}>
               Operación exitosa
             </div>
           </div>
@@ -632,60 +641,88 @@ export default function CargarTrabajo({
 }
 
 const styles = {
+  headerForm: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+    marginBottom: "30px",
+    borderBottom: "3px solid #f1f5f9",
+    paddingBottom: "20px",
+  },
+  btnVolver: {
+    backgroundColor: "rgba(0,0,0,0.06)",
+    color: "#0f172a",
+    border: "1px solid #cbd5e1",
+    padding: "10px 16px",
+    borderRadius: "10px",
+    fontWeight: "800",
+    fontSize: "1rem",
+    cursor: "pointer",
+  },
+  tituloForm: {
+    margin: 0,
+    fontSize: "2.1rem",
+    color: "#0f172a",
+    fontWeight: "900",
+  },
   wizardHeader: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: "12px",
-    paddingBottom: "8px",
-    borderBottom: "1px solid #e2e8f0",
+    marginBottom: "28px",
+    paddingBottom: "16px",
+    borderBottom: "2px solid #e2e8f0",
     width: "100%",
   },
   stepBadge: (activo, completado) => ({
-    padding: "4px 10px",
-    borderRadius: "16px",
-    fontSize: "0.75rem",
-    fontWeight: "800",
+    padding: "10px 18px",
+    borderRadius: "20px",
+    fontSize: "1rem",
+    fontWeight: "900",
     backgroundColor: activo ? "#059669" : completado ? "#d1fae5" : "#f1f5f9",
     color: activo ? "#ffffff" : completado ? "#065f46" : "#64748b",
   }),
   fieldGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
-    marginBottom: "12px",
+    gap: "14px",
+    marginBottom: "32px",
     width: "100%",
     boxSizing: "border-box",
   },
   label: {
-    fontSize: "0.78rem",
-    fontWeight: "800",
+    fontSize: "1.2rem",
+    fontWeight: "900",
+    color: "#0f172a",
+    textTransform: "uppercase",
+    letterSpacing: "0.8px",
+  },
+  subLabel: {
+    fontSize: "1.05rem",
+    fontWeight: "900",
     color: "#334155",
     textTransform: "uppercase",
   },
-  subLabel: {
-    fontSize: "0.75rem",
-    fontWeight: "700",
-    color: "#475569",
-  },
   input: {
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #cbd5e1",
-    backgroundColor: "#ffffff",
+    padding: "22px 20px",
+    borderRadius: "18px",
+    border: "2px solid #64748b",
+    backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px", // Evita zoom automático
+    fontSize: "16px", // Fijo en 16px para evitar zoom automático en móviles
+    fontWeight: "800",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
   },
   select: {
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #cbd5e1",
-    backgroundColor: "#ffffff",
+    padding: "22px 20px",
+    borderRadius: "18px",
+    border: "2px solid #64748b",
+    backgroundColor: "#f8fafc",
     color: "#0f172a",
-    fontSize: "16px", // Evita zoom automático
+    fontSize: "16px", // Fijo en 16px para evitar zoom automático en móviles
+    fontWeight: "800",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
@@ -693,177 +730,184 @@ const styles = {
   subFormContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
-    marginTop: "6px",
-    padding: "10px",
+    gap: "14px",
+    marginTop: "14px",
+    padding: "20px",
     backgroundColor: "#f8fafc",
-    borderRadius: "8px",
-    border: "1px dashed #059669",
+    borderRadius: "16px",
+    border: "2px dashed #059669",
     width: "100%",
     boxSizing: "border-box",
   },
   btnSecundarioAccion: {
-    padding: "10px",
+    padding: "18px",
     backgroundColor: "#059669",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
-    fontWeight: "800",
+    borderRadius: "14px",
+    fontWeight: "900",
     cursor: "pointer",
-    fontSize: "0.85rem",
+    fontSize: "1.1rem",
   },
   lotesGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
-    gap: "6px",
-    margin: "4px 0",
+    gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+    gap: "12px",
+    margin: "10px 0",
     width: "100%",
   },
   loteChip: (seleccionado) => ({
-    padding: "10px",
-    borderRadius: "8px",
-    border: `2px solid ${seleccionado ? "#059669" : "#cbd5e1"}`,
+    padding: "16px 12px",
+    borderRadius: "14px",
+    border: `3px solid ${seleccionado ? "#059669" : "#cbd5e1"}`,
     backgroundColor: seleccionado ? "#ecfdf5" : "#ffffff",
     color: seleccionado ? "#065f46" : "#334155",
-    fontWeight: "800",
-    fontSize: "0.8rem",
+    fontWeight: "900",
+    fontSize: "1.05rem",
     textAlign: "center",
     cursor: "pointer",
+    boxShadow: seleccionado ? "0 4px 12px rgba(5,150,105,0.2)" : "none",
   }),
   nuevoLoteRow: {
     display: "flex",
-    gap: "6px",
-    marginTop: "6px",
+    gap: "12px",
+    marginTop: "14px",
     width: "100%",
   },
   inputSmall: {
     flex: 1,
-    padding: "8px 12px",
-    borderRadius: "6px",
-    border: "1px solid #cbd5e1",
-    backgroundColor: "#ffffff",
+    padding: "18px 20px",
+    borderRadius: "14px",
+    border: "2px solid #cbd5e1",
+    backgroundColor: "#f8fafc",
     color: "#0f172a",
     fontSize: "16px",
+    fontWeight: "800",
     outline: "none",
   },
   btnAgregarLote: {
-    padding: "8px 12px",
+    padding: "18px 24px",
     backgroundColor: "#059669",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
-    fontWeight: "800",
-    fontSize: "0.85rem",
+    borderRadius: "14px",
+    fontWeight: "900",
+    fontSize: "1.1rem",
     cursor: "pointer",
   },
   lotesCardContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
-    margin: "10px 0",
+    gap: "20px",
+    margin: "24px 0",
     width: "100%",
   },
   loteDetailCard: {
     backgroundColor: "#f8fafc",
-    border: "1px solid #e2e8f0",
-    borderRadius: "10px",
-    padding: "12px",
+    border: "2px solid #cbd5e1",
+    borderRadius: "20px",
+    padding: "24px",
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: "18px",
     width: "100%",
     boxSizing: "border-box",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.04)",
   },
   loteTitle: {
-    fontSize: "0.9rem",
+    fontSize: "1.25rem",
     fontWeight: "900",
     color: "#065f46",
-    borderBottom: "1px solid #cbd5e1",
-    paddingBottom: "4px",
+    borderBottom: "2px solid #cbd5e1",
+    paddingBottom: "10px",
+    textTransform: "uppercase",
   },
   fieldSubGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
+    gap: "10px",
     width: "100%",
   },
   inputNumberBig: {
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #059669",
-    fontSize: "1.1rem",
+    padding: "20px",
+    borderRadius: "14px",
+    border: "3px solid #059669",
+    fontSize: "1.5rem",
     fontWeight: "900",
     color: "#065f46",
     backgroundColor: "#ecfdf5",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
+    textAlign: "center",
   },
   actionsRowFull: {
     display: "flex",
     width: "100%",
-    marginTop: "16px",
+    marginTop: "30px",
   },
   btnSiguienteFull: (isDisabled) => ({
     width: "100%",
-    padding: "14px",
+    padding: "26px",
     backgroundColor: isDisabled ? "#cbd5e1" : "#059669",
     color: "#fff",
     border: "none",
-    borderRadius: "10px",
-    fontSize: "0.95rem",
+    borderRadius: "20px",
+    fontSize: "1.3rem",
     fontWeight: "900",
     cursor: isDisabled ? "not-allowed" : "pointer",
-    boxShadow: isDisabled ? "none" : "0 4px 12px rgba(5, 150, 105, 0.3)",
+    boxShadow: isDisabled ? "none" : "0 10px 30px rgba(5, 150, 105, 0.4)",
+    letterSpacing: "0.5px",
   }),
   actionsRowCustom: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    marginTop: "16px",
+    gap: "16px",
+    marginTop: "30px",
     width: "100%",
   },
   btnAtrasSmall: {
-    padding: "12px 14px",
+    padding: "22px 24px",
     backgroundColor: "#e2e8f0",
     color: "#334155",
-    border: "1px solid #cbd5e1",
-    borderRadius: "8px",
-    fontSize: "0.8rem",
-    fontWeight: "800",
+    border: "2px solid #cbd5e1",
+    borderRadius: "18px",
+    fontSize: "1.1rem",
+    fontWeight: "900",
     cursor: "pointer",
     flexShrink: 0,
   },
   btnSubmitFull: (activo) => ({
     flex: 1,
-    padding: "14px",
+    padding: "26px",
     backgroundColor: activo ? "#059669" : "#cbd5e1",
     color: "#ffffff",
     border: "none",
-    borderRadius: "10px",
-    fontSize: "0.95rem",
+    borderRadius: "20px",
+    fontSize: "1.3rem",
     fontWeight: "900",
     cursor: activo ? "pointer" : "not-allowed",
-    boxShadow: activo ? "0 4px 12px rgba(5, 150, 105, 0.3)" : "none",
+    boxShadow: activo ? "0 10px 30px rgba(5, 150, 105, 0.4)" : "none",
+    letterSpacing: "0.5px",
   }),
   toastAlert: {
     position: "fixed",
-    bottom: "20px",
+    bottom: "30px",
     left: "50%",
     transform: "translateX(-50%)",
     backgroundColor: "#0f172a",
     color: "#ffffff",
-    padding: "12px 18px",
-    borderRadius: "10px",
+    padding: "18px 24px",
+    borderRadius: "16px",
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    boxShadow: "0 8px 20px rgba(0, 0, 0, 0.5)",
+    gap: "14px",
+    boxShadow: "0 12px 35px rgba(0, 0, 0, 0.5)",
     zIndex: 2000,
-    fontSize: "0.9rem",
-    borderLeft: "4px solid #10b981",
+    fontSize: "1.1rem",
+    borderLeft: "6px solid #10b981",
     border: "1px solid #1e293b",
-    minWidth: "260px",
+    minWidth: "300px",
     textAlign: "center",
   },
 };

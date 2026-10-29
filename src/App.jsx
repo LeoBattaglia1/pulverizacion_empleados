@@ -10,21 +10,13 @@ export default function App() {
   const [asignaciones, setAsignaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // Sesión/Selección del empleado y máquina
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
   const [maquinaSeleccionada, setMaquinaSeleccionada] = useState("");
   const [vinculacionActiva, setVinculacionActiva] = useState(true);
   const [sesionIniciada, setSesionIniciada] = useState(false);
 
-  // ========================================== //
-  // CLAVE DE ACCESO GENERAL PARA LOS EMPLEADOS //
   const CLAVE_ACCESO_SISTEMA = "1234";
-  // ========================================== //
-
-  // ========================================== //
-  // NÚMERO DE WHATSAPP PARA LOS ENVÍOS         //
   const TELEFONO_WHATSAPP = "5492494553810";
-  // ========================================== //
 
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState(false);
@@ -129,7 +121,14 @@ export default function App() {
     return (
       <div style={styles.containerCentrado}>
         <div style={styles.spinner}></div>
-        <p style={{ marginTop: "16px", color: "#047857", fontWeight: "600" }}>
+        <p
+          style={{
+            marginTop: "20px",
+            color: "#34d399",
+            fontWeight: "800",
+            fontSize: "1.4rem",
+          }}
+        >
           Cargando sistema...
         </p>
       </div>
@@ -220,7 +219,7 @@ export default function App() {
                   type="checkbox"
                   checked={vinculacionActiva}
                   onChange={(e) => setVinculacionActiva(e.target.checked)}
-                  style={{ accentColor: "#059669", transform: "scale(1.2)" }}
+                  style={{ accentColor: "#059669", transform: "scale(1.4)" }}
                 />
                 Vinculación automática de equipo
               </label>
@@ -241,7 +240,7 @@ export default function App() {
                 }}
                 style={{
                   ...styles.inputSmallKey,
-                  borderColor: errorClave ? "#dc2626" : "#cbd5e1",
+                  borderColor: errorClave ? "#dc2626" : "#64748b",
                 }}
               />
               {errorClave && (
@@ -272,16 +271,38 @@ export default function App() {
     <div style={styles.appMobile}>
       <header style={styles.headerLogged}>
         <div style={styles.headerInfoContainer}>
-          <span style={styles.badgeEmpleado}>
-            Operario: <strong>{nombreEmpleado}</strong>
-          </span>
-          <span style={styles.badgeMaquina}>
-            Máquina: <strong>{nombreMaquina}</strong>
-          </span>
+          <div style={styles.badgeRow}>
+            <span style={styles.badgeLabel}>Operario:</span>
+            <span style={styles.badgeValue}>{nombreEmpleado}</span>
+          </div>
+          <div style={styles.badgeRow}>
+            <span style={styles.badgeLabel}>Máquina:</span>
+            <span style={styles.badgeValueMaquina}>{nombreMaquina}</span>
+          </div>
         </div>
-        <button onClick={handleCerrarSesion} style={styles.btnSalir}>
-          Salir
-        </button>
+
+        {/* Botón de Atrás o Cerrar Sesión */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            width: "100%",
+            marginTop: "8px",
+          }}
+        >
+          {vistaActiva !== "menu" ? (
+            <button
+              onClick={() => setVistaActiva("menu")}
+              style={styles.btnAtrasHeader}
+            >
+              ← Atrás (Menú)
+            </button>
+          ) : (
+            <button onClick={handleCerrarSesion} style={styles.btnAtrasHeader}>
+              Cerrar Sesión
+            </button>
+          )}
+        </div>
       </header>
 
       <main style={styles.content}>
@@ -305,16 +326,6 @@ export default function App() {
 
         {vistaActiva === "trabajo" && (
           <div style={styles.formCard}>
-            <div style={styles.headerForm}>
-              <button
-                onClick={() => setVistaActiva("menu")}
-                style={styles.btnVolver}
-              >
-                ← Volver
-              </button>
-              <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
-            </div>
-
             <CargarTrabajo
               empleadoId={empleadoSeleccionado}
               maquinaId={maquinaSeleccionada}
@@ -328,12 +339,6 @@ export default function App() {
         {vistaActiva === "consumo" && (
           <div style={styles.formCard}>
             <div style={styles.headerForm}>
-              <button
-                onClick={() => setVistaActiva("menu")}
-                style={styles.btnVolver}
-              >
-                ← Volver
-              </button>
               <h2 style={styles.tituloForm}>Consumos e Insumos</h2>
             </div>
             <Insumos
@@ -357,10 +362,10 @@ export default function App() {
 
 const styles = {
   appMobile: {
-    width: "100%", // Ocupa el 100% de la pantalla sin restricciones
+    width: "100%",
     minHeight: "100vh",
     margin: "0 auto",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f1f5f9",
     color: "#1e293b",
     display: "flex",
     flexDirection: "column",
@@ -373,84 +378,102 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8fafc",
-    color: "#1e293b",
+    backgroundColor: "#000000",
+    color: "#ffffff",
   },
   header: {
-    backgroundColor: "#0f172a", // Color exacto del fondo del logo
+    backgroundColor: "#000000",
     color: "#ffffff",
-    padding: "28px 20px 24px 20px",
+    padding: "52px 24px 44px 24px",
     textAlign: "center",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
     position: "relative",
     width: "100%",
     boxSizing: "border-box",
   },
   headerTopBar: {
-    marginBottom: "4px",
+    marginBottom: "12px",
   },
   headerSubtitle: {
-    fontSize: "0.75rem",
+    fontSize: "1.1rem",
     textTransform: "uppercase",
-    letterSpacing: "1.5px",
+    letterSpacing: "3px",
     color: "#34d399",
-    fontWeight: "700",
+    fontWeight: "900",
   },
   headerAccentLine: {
     position: "absolute",
     bottom: 0,
     left: "50%",
     transform: "translateX(-50%)",
-    width: "80px",
-    height: "4px",
+    width: "160px",
+    height: "6px",
     backgroundColor: "#059669",
-    borderRadius: "2px",
+    borderRadius: "3px",
   },
   headerLogged: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#000000",
     color: "#ffffff",
-    padding: "20px",
+    padding: "32px 24px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+    flexDirection: "column",
+    gap: "16px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.3)",
     width: "100%",
     boxSizing: "border-box",
+    borderBottom: "4px solid #059669",
   },
   headerInfoContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
+    gap: "14px",
+    width: "100%",
+  },
+  badgeRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    padding: "16px 20px",
+    borderRadius: "14px",
+  },
+  badgeLabel: {
+    fontSize: "1.15rem",
+    color: "#94a3b8",
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  badgeValue: {
+    fontSize: "1.35rem",
+    color: "#ffffff",
+    fontWeight: "900",
+  },
+  badgeValueMaquina: {
+    fontSize: "1.35rem",
+    color: "#34d399",
+    fontWeight: "900",
+  },
+  btnAtrasHeader: {
+    backgroundColor: "rgba(255,255,255,0.12)",
+    color: "#cbd5e1",
+    border: "1px solid #475569",
+    padding: "10px 18px",
+    borderRadius: "10px",
+    fontSize: "1rem",
+    fontWeight: "800",
+    cursor: "pointer",
+    transition: "all 0.2s",
   },
   tituloHeader: {
     margin: 0,
-    fontSize: "1.5rem",
+    fontSize: "2.4rem",
     fontWeight: "900",
     color: "#ffffff",
-    letterSpacing: "0.5px",
+    letterSpacing: "1px",
     textTransform: "uppercase",
   },
-  badgeEmpleado: {
-    fontSize: "0.85rem",
-    color: "#cbd5e1",
-  },
-  badgeMaquina: {
-    fontSize: "0.85rem",
-    color: "#34d399",
-    fontWeight: "700",
-  },
-  btnSalir: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    color: "#ffffff",
-    border: "1px solid rgba(255,255,255,0.2)",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    fontSize: "0.85rem",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
   content: {
-    padding: "24px 16px",
+    padding: "45px 20px",
     flex: 1,
     display: "flex",
     flexDirection: "column",
@@ -460,198 +483,193 @@ const styles = {
   },
   formCard: {
     backgroundColor: "#ffffff",
-    padding: "28px 22px",
-    borderRadius: "20px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-    border: "1px solid #e2e8f0",
+    padding: "60px 40px", // Misma tarjeta masiva y espaciosa que el login
+    borderRadius: "32px",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+    border: "1px solid #cbd5e1",
     width: "100%",
     boxSizing: "border-box",
   },
   loginBannerDecorativo: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    marginBottom: "22px",
-    paddingBottom: "14px",
-    borderBottom: "2px solid #f1f5f9",
+    gap: "14px",
+    marginBottom: "40px",
+    paddingBottom: "22px",
+    borderBottom: "3px solid #f1f5f9",
   },
   bannerPuntoLuminoso: {
-    width: "10px",
-    height: "10px",
+    width: "14px",
+    height: "14px",
     backgroundColor: "#059669",
     borderRadius: "50%",
-    boxShadow: "0 0 10px #059669",
+    boxShadow: "0 0 15px #059669",
   },
   bannerText: {
-    fontSize: "0.9rem",
-    fontWeight: "800",
+    fontSize: "1.25rem",
+    fontWeight: "900",
     color: "#059669",
-    letterSpacing: "0.5px",
+    letterSpacing: "1px",
     textTransform: "uppercase",
   },
   group: {
-    marginBottom: "18px",
+    marginBottom: "40px",
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: "18px",
     width: "100%",
   },
   groupCentered: {
-    marginBottom: "24px",
+    marginBottom: "48px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "8px",
+    gap: "20px",
     width: "100%",
+    marginTop: "25px",
   },
   label: {
-    fontSize: "0.85rem",
-    fontWeight: "800",
-    color: "#334155",
+    fontSize: "1.3rem",
+    fontWeight: "900",
+    color: "#0f172a",
     textTransform: "uppercase",
-    letterSpacing: "0.5px",
+    letterSpacing: "0.8px",
   },
   labelCentered: {
-    fontSize: "0.85rem",
-    fontWeight: "800",
-    color: "#334155",
+    fontSize: "1.3rem",
+    fontWeight: "900",
+    color: "#0f172a",
     textTransform: "uppercase",
-    letterSpacing: "0.5px",
+    letterSpacing: "0.8px",
     textAlign: "center",
   },
   inputSmallKey: {
-    padding: "14px",
-    borderRadius: "12px",
-    border: "2px solid #cbd5e1",
+    padding: "24px",
+    borderRadius: "18px",
+    border: "2px solid #64748b",
     fontSize: "16px",
-    fontWeight: "800",
+    fontWeight: "900",
     textAlign: "center",
-    letterSpacing: "6px",
+    letterSpacing: "12px",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     outline: "none",
     width: "100%",
-    maxWidth: "180px",
+    maxWidth: "300px",
     boxSizing: "border-box",
   },
   errorText: {
-    fontSize: "0.8rem",
+    fontSize: "1.1rem",
     color: "#dc2626",
-    fontWeight: "700",
+    fontWeight: "900",
   },
   selectLarge: {
-    padding: "16px",
-    borderRadius: "12px",
-    border: "2px solid #cbd5e1",
+    padding: "26px 22px",
+    borderRadius: "18px",
+    border: "2px solid #64748b",
     fontSize: "16px",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     outline: "none",
     width: "100%",
     boxSizing: "border-box",
-    fontWeight: "600",
+    fontWeight: "800",
   },
   checkboxContainer: {
-    margin: "16px 0 20px 0",
+    margin: "35px 0 45px 0",
   },
   checkboxLabel: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
-    fontSize: "0.9rem",
-    color: "#475569",
+    gap: "20px",
+    fontSize: "1.3rem",
+    color: "#334155",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "800",
   },
   btnIngresar: {
     width: "100%",
-    padding: "18px",
+    padding: "28px",
     backgroundColor: "#059669",
     color: "#fff",
     border: "none",
-    borderRadius: "14px",
-    fontSize: "1.05rem",
+    borderRadius: "22px",
+    fontSize: "1.45rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 6px 20px rgba(5, 150, 105, 0.4)",
-    letterSpacing: "0.5px",
+    boxShadow: "0 12px 35px rgba(5, 150, 105, 0.5)",
+    letterSpacing: "1px",
   },
   menuGrid: {
     display: "flex",
     flexDirection: "column",
-    gap: "20px",
+    gap: "40px",
     width: "100%",
   },
   btnMenuGigantePrimary: {
     width: "100%",
-    padding: "28px 20px",
+    padding: "50px 24px",
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
-    borderRadius: "18px",
-    fontSize: "1.25rem",
+    borderRadius: "28px",
+    fontSize: "1.9rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 8px 25px rgba(5, 150, 105, 0.4)",
+    boxShadow: "0 14px 40px rgba(5, 150, 105, 0.5)",
     textAlign: "center",
+    letterSpacing: "0.5px",
   },
   btnMenuGiganteSecondary: {
     width: "100%",
-    padding: "28px 20px",
+    padding: "50px 24px",
     backgroundColor: "#334155",
     color: "#ffffff",
     border: "none",
-    borderRadius: "18px",
-    fontSize: "1.25rem",
+    borderRadius: "28px",
+    fontSize: "1.9rem",
     fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 8px 25px rgba(51, 65, 85, 0.3)",
+    boxShadow: "0 14px 40px rgba(51, 65, 85, 0.4)",
     textAlign: "center",
+    letterSpacing: "0.5px",
   },
   headerForm: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
-    marginBottom: "18px",
-    borderBottom: "2px solid #f1f5f9",
-    paddingBottom: "14px",
-  },
-  btnVolver: {
-    background: "none",
-    border: "none",
-    color: "#059669",
-    fontWeight: "800",
-    fontSize: "0.95rem",
-    cursor: "pointer",
+    gap: "20px",
+    marginBottom: "35px",
+    borderBottom: "3px solid #f1f5f9",
+    paddingBottom: "24px",
   },
   tituloForm: {
     margin: 0,
-    fontSize: "1.2rem",
+    fontSize: "2.1rem",
     color: "#0f172a",
     fontWeight: "900",
   },
   spinner: {
-    width: "40px",
-    height: "40px",
-    border: "4px solid #cbd5e1",
-    borderTop: "4px solid #059669",
+    width: "65px",
+    height: "65px",
+    border: "6px solid #334155",
+    borderTop: "6px solid #34d399",
     borderRadius: "50%",
     animation: "spin 1s linear infinite",
   },
   footer: {
-    backgroundColor: "#0f172a", // Mismo tono oscuro exacto del logo
-    padding: "24px 20px",
+    backgroundColor: "#000000",
+    padding: "45px 20px",
     textAlign: "center",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
     boxSizing: "border-box",
-    borderTop: "1px solid #1e293b",
-    boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",
+    borderTop: "2px solid #1e293b",
+    boxShadow: "0 -8px 30px rgba(0,0,0,0.3)",
   },
   footerLogo: {
-    height: "65px",
+    height: "110px",
     objectFit: "contain",
   },
 };
