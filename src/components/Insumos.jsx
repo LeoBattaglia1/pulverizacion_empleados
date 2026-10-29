@@ -3,51 +3,54 @@ import api from "../services/api";
 
 const styles = {
   container: {
-    padding: "20px 16px",
+    padding: "10px 0",
     width: "100%",
     boxSizing: "border-box",
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-    gap: "16px",
+    gridTemplateColumns: "1fr",
+    gap: "30px",
     width: "100%",
   },
   tanqueCard: (colorBorde) => ({
     backgroundColor: "#ffffff",
-    borderRadius: "16px",
-    border: `3px solid ${colorBorde}`,
-    padding: "16px",
+    borderRadius: "28px",
+    border: `4px solid ${colorBorde}`,
+    padding: "30px 24px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+    boxShadow: "0 12px 35px rgba(0,0,0,0.08)",
     position: "relative",
-    overflow: "hidden",
+    width: "100%",
+    boxSizing: "border-box",
   }),
   tanqueHeader: {
     width: "100%",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: "12px",
+    marginBottom: "18px",
   },
   tanqueNombre: {
-    fontSize: "1.05rem",
-    fontWeight: "800",
+    fontSize: "1.6rem",
+    fontWeight: "900",
     color: "#0f172a",
     textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   },
   tanqueContenedorGrafico: {
-    width: "110px",
-    height: "170px",
+    width: "180px",
+    height: "260px",
     backgroundColor: "#f8fafc",
-    borderRadius: "14px",
-    border: "3px solid #cbd5e1",
+    borderRadius: "20px",
+    border: "4px solid #94a3b8",
     position: "relative",
     overflow: "hidden",
-    boxShadow: "inset 0 4px 8px rgba(0,0,0,0.08)",
-    marginBottom: "14px",
+    boxShadow: "inset 0 6px 15px rgba(0,0,0,0.12)",
+    marginBottom: "22px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-end",
@@ -57,7 +60,7 @@ const styles = {
     transition: "height 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
     position: "relative",
     backgroundImage:
-      "linear-gradient(90deg, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.1) 100%)",
+      "linear-gradient(90deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.1) 100%)",
   },
   reflejoLiquido: {
     position: "absolute",
@@ -65,67 +68,72 @@ const styles = {
     left: "15%",
     width: "25%",
     height: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.25)",
-    filter: "blur(2px)",
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+    filter: "blur(3px)",
   },
   tapaSuperiorTanque: {
     position: "absolute",
-    top: "-6px",
+    top: "-8px",
     left: "25%",
     width: "50%",
-    height: "6px",
-    backgroundColor: "#64748b",
-    borderRadius: "3px 3px 0 0",
+    height: "8px",
+    backgroundColor: "#475569",
+    borderRadius: "4px 4px 0 0",
   },
   infoTotales: {
     textAlign: "center",
-    marginBottom: "14px",
+    marginBottom: "24px",
   },
   cantidadActualText: {
-    fontSize: "1.25rem",
+    fontSize: "2.2rem",
     fontWeight: "900",
     color: "#0f172a",
   },
   capacidadMaxText: {
-    fontSize: "0.75rem",
+    fontSize: "1rem",
     color: "#64748b",
+    fontWeight: "700",
+    marginTop: "4px",
   },
   botonesAccion: {
     display: "flex",
-    gap: "8px",
+    gap: "16px",
     width: "100%",
   },
   btnCargarStock: {
     flex: 1,
-    padding: "10px",
+    padding: "18px",
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    fontSize: "0.85rem",
-    fontWeight: "800",
+    borderRadius: "16px",
+    fontSize: "1.15rem",
+    fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 2px 6px rgba(5, 150, 105, 0.3)",
+    boxShadow: "0 6px 20px rgba(5, 150, 105, 0.4)",
+    letterSpacing: "0.5px",
   },
   btnUsarStock: {
     flex: 1,
-    padding: "10px",
+    padding: "18px",
     backgroundColor: "#dc2626",
     color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    fontSize: "0.85rem",
-    fontWeight: "800",
+    borderRadius: "16px",
+    fontSize: "1.15rem",
+    fontWeight: "900",
     cursor: "pointer",
-    boxShadow: "0 2px 6px rgba(220, 38, 38, 0.3)",
+    boxShadow: "0 6px 20px rgba(220, 38, 38, 0.4)",
+    letterSpacing: "0.5px",
   },
+  // MODAL GIGANTE Y CON LETRAS MAS GRANDES
   modalOverlay: {
     position: "fixed",
     top: 0,
     left: 0,
     width: "100vw",
     height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -135,74 +143,91 @@ const styles = {
   },
   modalCard: {
     backgroundColor: "#ffffff",
-    padding: "24px",
-    borderRadius: "14px",
-    maxWidth: "400px",
+    padding: "45px 36px",
+    borderRadius: "32px",
+    maxWidth: "520px",
     width: "100%",
-    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
     position: "relative",
+    border: "3px solid #64748b",
   },
   btnCloseX: {
     position: "absolute",
-    top: "16px",
-    right: "16px",
-    background: "transparent",
-    border: "none",
-    fontSize: "1.2rem",
-    fontWeight: "800",
-    color: "#64748b",
+    top: "22px",
+    right: "22px",
+    background: "#f1f5f9",
+    border: "2px solid #cbd5e1",
+    borderRadius: "50%",
+    width: "48px",
+    height: "48px",
+    fontSize: "1.6rem",
+    fontWeight: "900",
+    color: "#0f172a",
     cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   formGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
-    marginBottom: "16px",
+    gap: "12px",
+    marginBottom: "28px",
   },
   label: {
-    fontSize: "0.8rem",
-    fontWeight: "800",
-    color: "#334155",
+    fontSize: "1.2rem",
+    fontWeight: "900",
+    color: "#0f172a",
     textTransform: "uppercase",
+    letterSpacing: "0.8px",
   },
   input: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #cbd5e1",
-    fontSize: "1rem",
-    backgroundColor: "#fff",
+    padding: "22px 20px",
+    borderRadius: "16px",
+    border: "3px solid #64748b",
+    fontSize: "1.2rem", // Letras grandes dentro del input
+    fontWeight: "900",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
     boxSizing: "border-box",
     width: "100%",
     outline: "none",
   },
   btnModalSubmit: (isReponer) => ({
     flex: 1,
-    padding: "12px",
+    padding: "22px",
     backgroundColor: isReponer ? "#059669" : "#dc2626",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
-    fontWeight: "800",
+    borderRadius: "16px",
+    fontSize: "1.25rem",
+    fontWeight: "900",
     cursor: "pointer",
+    boxShadow: isReponer
+      ? "0 8px 25px rgba(5,150,105,0.4)"
+      : "0 8px 25px rgba(220,38,38,0.4)",
+    letterSpacing: "0.5px",
   }),
   btnModalCancel: {
-    padding: "12px 16px",
+    padding: "22px 24px",
     backgroundColor: "#e2e8f0",
     color: "#334155",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "700",
+    border: "2px solid #cbd5e1",
+    borderRadius: "16px",
+    fontSize: "1.2rem",
+    fontWeight: "900",
     cursor: "pointer",
   },
   alertaBox: {
     backgroundColor: "#fef2f2",
-    border: "1px solid #fecaca",
+    border: "3px solid #fecaca",
     color: "#991b1b",
-    padding: "10px 12px",
-    borderRadius: "8px",
-    fontSize: "0.85rem",
-    marginBottom: "14px",
-    fontWeight: "600",
+    padding: "16px 20px",
+    borderRadius: "14px",
+    fontSize: "1.1rem",
+    marginBottom: "24px",
+    fontWeight: "900",
+    textAlign: "center",
   },
   toastContainer: {
     position: "fixed",
@@ -214,12 +239,12 @@ const styles = {
     gap: "8px",
   },
   toast: (tipo) => ({
-    padding: "12px 18px",
-    borderRadius: "8px",
+    padding: "14px 22px",
+    borderRadius: "12px",
     color: "#fff",
-    fontSize: "0.9rem",
-    fontWeight: "700",
-    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.2)",
+    fontSize: "1.05rem",
+    fontWeight: "800",
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
     backgroundColor: tipo === "error" ? "#dc2626" : "#059669",
   }),
 };
@@ -282,7 +307,6 @@ export default function Insumos({ empleadoId, maquinaId }) {
     }
   };
 
-  // Corrección de React Compiler: Carga asíncrona desacoplada del render síncrono
   useEffect(() => {
     let montado = true;
 
@@ -405,16 +429,16 @@ export default function Insumos({ empleadoId, maquinaId }) {
               {stockActual <= umbralAlerta && stockActual > 0 && (
                 <div
                   style={{
-                    fontSize: "0.7rem",
+                    fontSize: "0.95rem",
                     backgroundColor: "#fee2e2",
                     color: "#991b1b",
-                    padding: "2px 6px",
-                    borderRadius: "4px",
-                    marginBottom: "6px",
-                    fontWeight: "800",
+                    padding: "8px 14px",
+                    borderRadius: "10px",
+                    marginBottom: "16px",
+                    fontWeight: "900",
                   }}
                 >
-                  Stock Bajo (≤ {umbralAlerta}L)
+                  ⚠️ Stock Bajo (≤ {umbralAlerta}L)
                 </div>
               )}
 
@@ -470,7 +494,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
         })}
       </div>
 
-      {/* MODAL REPOSICIÓN */}
+      {/* MODAL REPOSICIÓN GIGANTE */}
       {modalCargarAbierto && insumoSeleccionado && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalCard}>
@@ -484,20 +508,22 @@ export default function Insumos({ empleadoId, maquinaId }) {
               style={{
                 marginBottom: "12px",
                 color: "#0f172a",
-                fontSize: "1.1rem",
+                fontSize: "1.7rem",
+                fontWeight: "900",
               }}
             >
               Reponer: {insumoSeleccionado.nombre}
             </h3>
             <p
               style={{
-                fontSize: "0.85rem",
+                fontSize: "1.15rem",
                 color: "#64748b",
-                marginBottom: "16px",
+                marginBottom: "28px",
+                fontWeight: "800",
               }}
             >
               Stock actual:{" "}
-              <b>
+              <b style={{ color: "#0f172a" }}>
                 {Math.round(Number(insumoSeleccionado.stock_actual) || 0)} L
               </b>
             </p>
@@ -530,8 +556,8 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div
                 style={{
                   display: "flex",
-                  gap: "10px",
-                  marginTop: "20px",
+                  gap: "16px",
+                  marginTop: "35px",
                 }}
               >
                 <button
@@ -550,7 +576,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
         </div>
       )}
 
-      {/* MODAL RETIRO */}
+      {/* MODAL RETIRO GIGANTE */}
       {modalUsarAbierto && insumoSeleccionado && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalCard}>
@@ -564,20 +590,22 @@ export default function Insumos({ empleadoId, maquinaId }) {
               style={{
                 marginBottom: "12px",
                 color: "#0f172a",
-                fontSize: "1.1rem",
+                fontSize: "1.7rem",
+                fontWeight: "900",
               }}
             >
               Retirar: {insumoSeleccionado.nombre}
             </h3>
             <p
               style={{
-                fontSize: "0.85rem",
+                fontSize: "1.15rem",
                 color: "#64748b",
-                marginBottom: "16px",
+                marginBottom: "28px",
+                fontWeight: "800",
               }}
             >
               Stock disponible:{" "}
-              <b>
+              <b style={{ color: "#0f172a" }}>
                 {Math.round(Number(insumoSeleccionado.stock_actual) || 0)} L
               </b>
             </p>
@@ -616,8 +644,8 @@ export default function Insumos({ empleadoId, maquinaId }) {
               <div
                 style={{
                   display: "flex",
-                  gap: "10px",
-                  marginTop: "20px",
+                  gap: "16px",
+                  marginTop: "35px",
                 }}
               >
                 <button

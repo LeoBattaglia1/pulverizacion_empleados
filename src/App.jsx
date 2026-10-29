@@ -13,6 +13,7 @@ export default function App() {
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
   const [maquinaSeleccionada, setMaquinaSeleccionada] = useState("");
   const [vinculacionActiva, setVinculacionActiva] = useState(true);
+
   const [sesionIniciada, setSesionIniciada] = useState(false);
 
   const CLAVE_ACCESO_SISTEMA = "1234";
@@ -108,12 +109,9 @@ export default function App() {
     setVistaActiva("menu");
   };
 
-  const handleCerrarSesion = () => {
+  const handleModificarDatos = () => {
     setSesionIniciada(false);
-    setEmpleadoSeleccionado("");
-    setMaquinaSeleccionada("");
     setClaveIngresada("");
-    setErrorClave(false);
     setVistaActiva("menu");
   };
 
@@ -151,181 +149,47 @@ export default function App() {
     ? maquinaObj.nombre || maquinaObj.modelo || maquinaObj.patente || "Máquina"
     : "Sin máquina";
 
-  // --- PANTALLA DE ACCESO / LOGIN ---
-  if (!sesionIniciada) {
-    return (
-      <div style={styles.appMobile}>
-        <header style={styles.header}>
-          <div style={styles.headerTopBar}>
-            <span style={styles.headerSubtitle}>Plataforma de Gestión</span>
-          </div>
-          <h1 style={styles.tituloHeader}>Pulverizaciones Amanda</h1>
-          <div style={styles.headerAccentLine}></div>
-        </header>
-
-        <main style={styles.content}>
-          <form onSubmit={handleIngresar} style={styles.formCard}>
-            <div style={styles.loginBannerDecorativo}>
-              <div style={styles.bannerPuntoLuminoso}></div>
-              <span style={styles.bannerText}>Panel de Identificación</span>
-            </div>
-
-            <div style={styles.group}>
-              <label style={styles.label}>Operario</label>
-              <select
-                required
-                value={empleadoSeleccionado}
-                onChange={handleEmpleadoChange}
-                style={styles.selectLarge}
-              >
-                <option value="">-- Seleccionar Operario --</option>
-                {empleados.map((emp) => {
-                  const nombreMostrar =
-                    emp.nombre || emp.apellido
-                      ? `${emp.nombre || ""} ${emp.apellido || ""}`.trim()
-                      : emp.username || `Empleado #${emp.id}`;
-                  return (
-                    <option key={emp.id} value={emp.id}>
-                      {nombreMostrar}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div style={styles.group}>
-              <label style={styles.label}>Máquina</label>
-              <select
-                required
-                value={maquinaSeleccionada}
-                onChange={handleMaquinaChange}
-                style={styles.selectLarge}
-              >
-                <option value="">-- Seleccionar Máquina --</option>
-                {maquinas.map((maq) => (
-                  <option key={maq.id} value={maq.id}>
-                    {maq.nombre ||
-                      maq.modelo ||
-                      maq.patente ||
-                      `Máquina #${maq.id}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div style={styles.checkboxContainer}>
-              <label style={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={vinculacionActiva}
-                  onChange={(e) => setVinculacionActiva(e.target.checked)}
-                  style={{ accentColor: "#059669", transform: "scale(1.4)" }}
-                />
-                Vinculación automática de equipo
-              </label>
-            </div>
-
-            <div style={styles.groupCentered}>
-              <label style={styles.labelCentered}>Clave de Acceso</label>
-              <input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="••••"
-                required
-                value={claveIngresada}
-                onChange={(e) => {
-                  setClaveIngresada(e.target.value);
-                  if (errorClave) setErrorClave(false);
-                }}
-                style={{
-                  ...styles.inputSmallKey,
-                  borderColor: errorClave ? "#dc2626" : "#64748b",
-                }}
-              />
-              {errorClave && (
-                <span style={styles.errorText}>
-                  Clave incorrecta. Intente nuevamente.
-                </span>
-              )}
-            </div>
-
-            <button type="submit" style={styles.btnIngresar}>
-              INGRESAR AL SISTEMA
-            </button>
-          </form>
-        </main>
-
-        <footer style={styles.footer}>
-          <img
-            src={logoEmprendimiento}
-            alt="Logo Empresa"
-            style={styles.footerLogo}
-          />
-        </footer>
-      </div>
-    );
-  }
-
   return (
     <div style={styles.appMobile}>
-      <header style={styles.headerLogged}>
-        <div style={styles.headerInfoContainer}>
-          <div style={styles.badgeRow}>
-            <span style={styles.badgeLabel}>Operario:</span>
-            <span style={styles.badgeValue}>{nombreEmpleado}</span>
-          </div>
-          <div style={styles.badgeRow}>
-            <span style={styles.badgeLabel}>Máquina:</span>
-            <span style={styles.badgeValueMaquina}>{nombreMaquina}</span>
-          </div>
+      <header style={styles.header}>
+        <div style={styles.headerTopBar}>
+          <span style={styles.headerSubtitle}>Plataforma de Gestión</span>
         </div>
-
-        {/* Botón de Atrás o Cerrar Sesión */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            width: "100%",
-            marginTop: "8px",
-          }}
-        >
-          {vistaActiva !== "menu" ? (
-            <button
-              onClick={() => setVistaActiva("menu")}
-              style={styles.btnAtrasHeader}
-            >
-              ← Atrás (Menú)
-            </button>
-          ) : (
-            <button onClick={handleCerrarSesion} style={styles.btnAtrasHeader}>
-              Cerrar Sesión
-            </button>
-          )}
-        </div>
+        <h1 style={styles.tituloHeader}>Pulverizaciones Amanda</h1>
+        <div style={styles.headerAccentLine}></div>
       </header>
 
-      <main style={styles.content}>
-        {vistaActiva === "menu" && (
-          <div style={styles.menuGrid}>
-            <button
-              onClick={() => setVistaActiva("trabajo")}
-              style={styles.btnMenuGigantePrimary}
-            >
-              Cargar Trabajo
-            </button>
-
-            <button
-              onClick={() => setVistaActiva("consumo")}
-              style={styles.btnMenuGiganteSecondary}
-            >
-              Consumos e Insumos
-            </button>
+      {/* Si hay sesión iniciada y estamos DENTRO de un módulo, mostramos la barra de operario/máquina debajo del header */}
+      {sesionIniciada && vistaActiva !== "menu" && (
+        <div style={styles.barraSesionModulo}>
+          <div style={styles.infoModuloTexto}>
+            <span>
+              Op: <strong>{nombreEmpleado}</strong>
+            </span>
+            <span>
+              Máq: <strong style={{ color: "#34d399" }}>{nombreMaquina}</strong>
+            </span>
           </div>
-        )}
+          <button
+            onClick={handleModificarDatos}
+            style={styles.btnCambiarDatosModulo}
+          >
+            Cambiar Operario/Máquina
+          </button>
+        </div>
+      )}
 
-        {vistaActiva === "trabajo" && (
+      <main style={styles.content}>
+        {vistaActiva === "trabajo" ? (
           <div style={styles.formCard}>
+            <div style={styles.headerForm}>
+              <button
+                onClick={() => setVistaActiva("menu")}
+                style={styles.btnVolver}
+              >
+                ← Volver al Menú
+              </button>
+            </div>
             <CargarTrabajo
               empleadoId={empleadoSeleccionado}
               maquinaId={maquinaSeleccionada}
@@ -334,17 +198,187 @@ export default function App() {
               onVolver={() => setVistaActiva("menu")}
             />
           </div>
-        )}
-
-        {vistaActiva === "consumo" && (
+        ) : vistaActiva === "consumo" ? (
           <div style={styles.formCard}>
             <div style={styles.headerForm}>
-              <h2 style={styles.tituloForm}>Consumos e Insumos</h2>
+              <button
+                onClick={() => setVistaActiva("menu")}
+                style={styles.btnVolver}
+              >
+                ← Volver al Menú
+              </button>
+              <h2 style={styles.tituloForm}>Consumos</h2>
             </div>
             <Insumos
               empleadoId={empleadoSeleccionado}
               maquinaId={maquinaSeleccionada}
             />
+          </div>
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: "35px",
+            }}
+          >
+            {/* TARJETA DE LOGIN (Inhabilitada con estilo opaco si ya se inició sesión) */}
+            <form
+              onSubmit={handleIngresar}
+              style={{
+                ...styles.formCard,
+                opacity: sesionIniciada ? 0.45 : 1,
+                pointerEvents: sesionIniciada ? "none" : "auto",
+                border: sesionIniciada
+                  ? "2px dashed #64748b"
+                  : "1px solid #cbd5e1",
+              }}
+            >
+              <div style={styles.loginBannerDecorativo}>
+                <div style={styles.bannerPuntoLuminoso}></div>
+                <span style={styles.bannerText}>
+                  {sesionIniciada
+                    ? "Acceso Verificado"
+                    : "Panel de Identificación"}
+                </span>
+              </div>
+
+              <div style={styles.group}>
+                <label style={styles.label}>Operario</label>
+                <select
+                  required
+                  value={empleadoSeleccionado}
+                  onChange={handleEmpleadoChange}
+                  style={styles.selectLarge}
+                  disabled={sesionIniciada}
+                >
+                  <option value="">-- Seleccionar Operario --</option>
+                  {empleados.map((emp) => {
+                    const nombreMostrar =
+                      emp.nombre || emp.apellido
+                        ? `${emp.nombre || ""} ${emp.apellido || ""}`.trim()
+                        : emp.username || `Empleado #${emp.id}`;
+                    return (
+                      <option key={emp.id} value={emp.id}>
+                        {nombreMostrar}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              <div style={styles.group}>
+                <label style={styles.label}>Máquina</label>
+                <select
+                  required
+                  value={maquinaSeleccionada}
+                  onChange={handleMaquinaChange}
+                  style={styles.selectLarge}
+                  disabled={sesionIniciada}
+                >
+                  <option value="">-- Seleccionar Máquina --</option>
+                  {maquinas.map((maq) => (
+                    <option key={maq.id} value={maq.id}>
+                      {maq.nombre ||
+                        maq.modelo ||
+                        maq.patente ||
+                        `Máquina #${maq.id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={styles.checkboxContainer}>
+                <label style={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={vinculacionActiva}
+                    onChange={(e) => setVinculacionActiva(e.target.checked)}
+                    style={{ accentColor: "#059669", transform: "scale(1.4)" }}
+                    disabled={sesionIniciada}
+                  />
+                  Vinculación automática de equipo
+                </label>
+              </div>
+
+              <div style={styles.groupCentered}>
+                <label style={styles.labelCentered}>Clave de Acceso</label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="••••"
+                  required
+                  value={claveIngresada}
+                  onChange={(e) => {
+                    setClaveIngresada(e.target.value);
+                    if (errorClave) setErrorClave(false);
+                  }}
+                  disabled={sesionIniciada}
+                  style={{
+                    ...styles.inputSmallKey,
+                    borderColor: errorClave ? "#dc2626" : "#64748b",
+                  }}
+                />
+                {errorClave && (
+                  <span style={styles.errorText}>
+                    Clave incorrecta. Intente nuevamente.
+                  </span>
+                )}
+              </div>
+
+              {!sesionIniciada && (
+                <button type="submit" style={styles.btnIngresar}>
+                  INGRESAR
+                </button>
+              )}
+            </form>
+
+            {/* BOTONES GIGANTES EN EL INICIO (SIN DATOS DE OPERARIO JUNTO A ELLOS) */}
+            {sesionIniciada && (
+              <div style={styles.menuGridDestacado}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#34d399",
+                      fontWeight: "900",
+                      fontSize: "1.1rem",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    ✓ Acceso Habilitado
+                  </span>
+                  <button
+                    onClick={handleModificarDatos}
+                    style={styles.btnCambiarDatosInicio}
+                  >
+                    Cambiar Operario/Máquina
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setVistaActiva("trabajo")}
+                  style={styles.btnMenuGigantePrimary}
+                >
+                  CARGAR TRABAJO
+                </button>
+
+                <button
+                  onClick={() => setVistaActiva("consumo")}
+                  style={styles.btnMenuGiganteSecondary}
+                >
+                  CONSUMOS
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -411,59 +445,6 @@ const styles = {
     backgroundColor: "#059669",
     borderRadius: "3px",
   },
-  headerLogged: {
-    backgroundColor: "#000000",
-    color: "#ffffff",
-    padding: "32px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.3)",
-    width: "100%",
-    boxSizing: "border-box",
-    borderBottom: "4px solid #059669",
-  },
-  headerInfoContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-    width: "100%",
-  },
-  badgeRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.08)",
-    padding: "16px 20px",
-    borderRadius: "14px",
-  },
-  badgeLabel: {
-    fontSize: "1.15rem",
-    color: "#94a3b8",
-    fontWeight: "800",
-    textTransform: "uppercase",
-  },
-  badgeValue: {
-    fontSize: "1.35rem",
-    color: "#ffffff",
-    fontWeight: "900",
-  },
-  badgeValueMaquina: {
-    fontSize: "1.35rem",
-    color: "#34d399",
-    fontWeight: "900",
-  },
-  btnAtrasHeader: {
-    backgroundColor: "rgba(255,255,255,0.12)",
-    color: "#cbd5e1",
-    border: "1px solid #475569",
-    padding: "10px 18px",
-    borderRadius: "10px",
-    fontSize: "1rem",
-    fontWeight: "800",
-    cursor: "pointer",
-    transition: "all 0.2s",
-  },
   tituloHeader: {
     margin: 0,
     fontSize: "2.4rem",
@@ -471,6 +452,34 @@ const styles = {
     color: "#ffffff",
     letterSpacing: "1px",
     textTransform: "uppercase",
+  },
+  barraSesionModulo: {
+    backgroundColor: "#0f172a",
+    color: "#ffffff",
+    padding: "16px 24px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "2px solid #34d399",
+    width: "100%",
+    boxSizing: "border-box",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+  },
+  infoModuloTexto: {
+    display: "flex",
+    gap: "16px",
+    fontSize: "1rem",
+    fontWeight: "800",
+  },
+  btnCambiarDatosModulo: {
+    backgroundColor: "rgba(220, 38, 38, 0.2)",
+    color: "#fca5a5",
+    border: "1px solid #dc2626",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    fontSize: "0.85rem",
+    fontWeight: "800",
+    cursor: "pointer",
   },
   content: {
     padding: "45px 20px",
@@ -483,12 +492,13 @@ const styles = {
   },
   formCard: {
     backgroundColor: "#ffffff",
-    padding: "60px 40px", // Misma tarjeta masiva y espaciosa que el login
+    padding: "60px 40px",
     borderRadius: "32px",
     boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
     border: "1px solid #cbd5e1",
     width: "100%",
     boxSizing: "border-box",
+    transition: "all 0.3s ease",
   },
   loginBannerDecorativo: {
     display: "flex",
@@ -600,51 +610,78 @@ const styles = {
     boxShadow: "0 12px 35px rgba(5, 150, 105, 0.5)",
     letterSpacing: "1px",
   },
-  menuGrid: {
+  menuGridDestacado: {
     display: "flex",
     flexDirection: "column",
-    gap: "40px",
+    gap: "25px",
     width: "100%",
+    animation: "fadeIn 0.4s ease-in-out",
+    backgroundColor: "#0f172a",
+    padding: "35px 28px",
+    borderRadius: "32px",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+    border: "2px solid #34d399",
+    boxSizing: "border-box",
+  },
+  btnCambiarDatosInicio: {
+    backgroundColor: "transparent",
+    color: "#f87171",
+    border: "1px solid #f87171",
+    padding: "8px 14px",
+    borderRadius: "8px",
+    fontSize: "0.85rem",
+    fontWeight: "800",
+    cursor: "pointer",
   },
   btnMenuGigantePrimary: {
     width: "100%",
-    padding: "50px 24px",
+    padding: "45px 24px",
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",
-    borderRadius: "28px",
-    fontSize: "1.9rem",
+    borderRadius: "24px",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 14px 40px rgba(5, 150, 105, 0.5)",
     textAlign: "center",
-    letterSpacing: "0.5px",
+    letterSpacing: "1px",
   },
   btnMenuGiganteSecondary: {
     width: "100%",
-    padding: "50px 24px",
+    padding: "45px 24px",
     backgroundColor: "#334155",
     color: "#ffffff",
     border: "none",
-    borderRadius: "28px",
-    fontSize: "1.9rem",
+    borderRadius: "24px",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 14px 40px rgba(51, 65, 85, 0.4)",
     textAlign: "center",
-    letterSpacing: "0.5px",
+    letterSpacing: "1px",
   },
   headerForm: {
     display: "flex",
     alignItems: "center",
-    gap: "20px",
-    marginBottom: "35px",
+    gap: "25px",
+    marginBottom: "40px", // Mayor separación del título y los inputs como solicitaste
     borderBottom: "3px solid #f1f5f9",
     paddingBottom: "24px",
   },
+  btnVolver: {
+    backgroundColor: "rgba(0,0,0,0.06)",
+    color: "#0f172a",
+    border: "1px solid #cbd5e1",
+    padding: "12px 20px",
+    borderRadius: "12px",
+    fontWeight: "900",
+    fontSize: "1.1rem",
+    cursor: "pointer",
+  },
   tituloForm: {
     margin: 0,
-    fontSize: "2.1rem",
+    fontSize: "2.3rem",
     color: "#0f172a",
     fontWeight: "900",
   },
