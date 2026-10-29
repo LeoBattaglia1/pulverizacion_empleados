@@ -23,6 +23,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
   const [nuevoLoteNombre, setNuevoLoteNombre] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [mostrarAlertaExito, setMostrarAlertaExito] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,14 +61,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     const nombreCli = nuevoClienteNombre.trim();
     const nombreCmp = nuevoCampoNombre.trim();
 
-    if (!nombreCli) {
-      alert("Ingrese el nombre del nuevo cliente.");
-      return;
-    }
-    if (!nombreCmp) {
-      alert("Al crear un nuevo cliente, es obligatorio crear un nuevo campo.");
-      return;
-    }
+    if (!nombreCli || !nombreCmp) return;
 
     try {
       const resCli = await api.post("/clientes", { nombre: nombreCli });
@@ -94,16 +88,12 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       setNuevoCampoNombre("");
     } catch (error) {
       console.error("Error al crear cliente y campo:", error);
-      alert("No se pudo registrar el nuevo cliente/campo.");
     }
   };
 
   const confirmarCrearCampo = async () => {
     const nombreCmp = nuevoCampoNombre.trim();
-    if (!nombreCmp || !clienteId) {
-      alert("Ingrese el nombre del nuevo campo.");
-      return;
-    }
+    if (!nombreCmp || !clienteId) return;
 
     try {
       const resCmp = await api.post("/campos", {
@@ -122,7 +112,6 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       setNuevoCampoNombre("");
     } catch (error) {
       console.error("Error al crear campo:", error);
-      alert("No se pudo agregar el campo.");
     }
   };
 
@@ -217,7 +206,6 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       setNuevoLoteNombre("");
     } catch (error) {
       console.error("Error al crear nuevo lote:", error);
-      alert("No se pudo agregar el nuevo lote.");
     }
   };
 
@@ -309,12 +297,16 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
         });
       }
 
-      alert("¡Trabajo guardado con éxito!");
-      enviarNotificacionWhatsApp(resumenParaWpp);
-      onVolver();
+      // Mostrar alerta estilo Toast elegante en lugar del alert feo del sistema
+      setMostrarAlertaExito(true);
+
+      setTimeout(() => {
+        enviarNotificacionWhatsApp(resumenParaWpp);
+        setMostrarAlertaExito(false);
+        onVolver();
+      }, 1500);
     } catch (error) {
       console.error("Error al guardar el trabajo:", error);
-      alert("Hubo un error al guardar el trabajo en la base de datos.");
     } finally {
       setGuardando(false);
     }
@@ -325,7 +317,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   );
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       {/* INDICADOR DE PASOS */}
       <div style={styles.wizardHeader}>
         <div style={styles.stepBadge(pasoActual === 1, pasoActual > 1)}>
@@ -664,6 +656,19 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           </div>
         )}
       </form>
+
+      {/* Cartel de Éxito Flotante Personalizado */}
+      {mostrarAlertaExito && (
+        <div style={styles.toastAlert}>
+          <span style={{ fontSize: "1.4rem" }}>✅</span>
+          <div>
+            <strong>¡Trabajo registrado!</strong>
+            <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
+              Abriendo WhatsApp...
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -829,4 +834,22 @@ const styles = {
     fontWeight: "800",
     cursor: activo ? "pointer" : "not-allowed",
   }),
+  toastAlert: {
+    position: "fixed",
+    bottom: "20px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    backgroundColor: "#0f172a",
+    color: "#ffffff",
+    padding: "12px 20px",
+    borderRadius: "10px",
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25)",
+    zIndex: 2000,
+    fontSize: "0.9rem",
+    borderLeft: "4px solid #10b981",
+    minWidth: "260px",
+  },
 };
