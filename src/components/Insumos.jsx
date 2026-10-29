@@ -132,7 +132,7 @@ const styles = {
     left: 0,
     width: "100vw",
     height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -142,9 +142,9 @@ const styles = {
   },
   modalCard: {
     backgroundColor: "#ffffff",
-    padding: "45px 36px",
+    padding: "45px 30px",
     borderRadius: "32px",
-    maxWidth: "560px",
+    maxWidth: "520px",
     width: "100%",
     boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
     position: "relative",
@@ -184,17 +184,32 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: "0.8px",
   },
-  input: {
-    padding: "30px 22px",
+  inputClickable: {
+    padding: "24px 22px",
     borderRadius: "18px",
     border: "3px solid #64748b",
-    fontSize: "25px" /* LETRA CONFIGURADA A 25PX */,
+    fontSize: "28px",
     fontWeight: "900",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
     boxSizing: "border-box",
     width: "100%",
     maxWidth: "100%",
+    cursor: "pointer",
+    textAlign: "center",
+    boxShadow: "inset 0 4px 10px rgba(0,0,0,0.04)",
+  },
+  inputDateFixed: {
+    padding: "24px 22px",
+    borderRadius: "18px",
+    border: "3px solid #64748b",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontSize: "25px",
+    fontWeight: "900",
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
     outline: "none",
   },
   btnModalSubmit: (isReponer) => ({
@@ -253,6 +268,105 @@ const styles = {
     boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
     backgroundColor: tipo === "error" ? "#dc2626" : "#059669",
   }),
+  // ESTILOS TECLADO TÁCTIL MODAL
+  modalTecladoCardFull: {
+    backgroundColor: "#ffffff",
+    padding: "35px 24px 50px 24px",
+    borderRadius: "36px 36px 0 0",
+    width: "100%",
+    maxWidth: "100%",
+    boxShadow: "0 -10px 40px rgba(0,0,0,0.5)",
+    borderTop: "5px solid #059669",
+    display: "flex",
+    flexDirection: "column",
+    gap: "25px",
+    boxSizing: "border-box",
+  },
+  modalTecladoHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "2px solid #f1f5f9",
+    paddingBottom: "15px",
+  },
+  modalTecladoTitulo: {
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    color: "#0f172a",
+    textTransform: "uppercase",
+  },
+  btnCloseModal: {
+    background: "#fee2e2",
+    border: "none",
+    borderRadius: "50%",
+    width: "55px",
+    height: "55px",
+    fontSize: "2rem",
+    fontWeight: "900",
+    color: "#991b1b",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalClaveDisplay: {
+    padding: "22px",
+    borderRadius: "18px",
+    backgroundColor: "#f8fafc",
+    border: "3px solid #64748b",
+    fontSize: "48px",
+    fontWeight: "900",
+    textAlign: "center",
+    color: "#0f172a",
+    minHeight: "85px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
+  tecladoGridModalFull: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "16px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  teclaBtnModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.8rem",
+    fontWeight: "900",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    border: "3px solid #cbd5e1",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
+    textAlign: "center",
+  },
+  teclaBorrarModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.6rem",
+    fontWeight: "900",
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    border: "3px solid #fecaca",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
+    textAlign: "center",
+  },
+  teclaOkModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    backgroundColor: "#059669",
+    color: "#ffffff",
+    border: "3px solid #047857",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(5,150,105,0.3)",
+    textAlign: "center",
+  },
 };
 
 const paletaBordesCards = [
@@ -296,6 +410,10 @@ export default function Insumos({ empleadoId, maquinaId }) {
   );
   const [errorStock, setErrorStock] = useState("");
 
+  // Control del teclado táctil numérico en Insumos
+  const [tecladoInsumoAbierto, setTecladoInsumoAbierto] = useState(false);
+  const [tipoAccionInsumo, setTipoAccionInsumo] = useState(""); // "cargar" o "usar"
+
   const mostrarToast = (mensaje, tipo = "success") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, mensaje, tipo }]);
@@ -335,6 +453,21 @@ export default function Insumos({ empleadoId, maquinaId }) {
       montado = false;
     };
   }, []);
+
+  const handleTecladoInsumoClick = (valor) => {
+    const actual =
+      tipoAccionInsumo === "cargar" ? cantidadCargar : cantidadUsar;
+    const setActual =
+      tipoAccionInsumo === "cargar" ? setCantidadCargar : setCantidadUsar;
+
+    if (valor === "borrar") {
+      setActual(actual.slice(0, -1));
+    } else {
+      if (actual.length < 8) {
+        setActual(actual + valor);
+      }
+    }
+  };
 
   const handleCargarStock = async (e) => {
     e.preventDefault();
@@ -532,16 +665,21 @@ export default function Insumos({ empleadoId, maquinaId }) {
             <form onSubmit={handleCargarStock}>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Cantidad a Ingresar *</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="Ej: 200"
-                  required
-                  value={cantidadCargar}
-                  onChange={(e) => setCantidadCargar(e.target.value)}
-                  style={styles.input}
-                />
+                <div
+                  onClick={() => {
+                    setTipoAccionInsumo("cargar");
+                    setTecladoInsumoAbierto(true);
+                  }}
+                  style={styles.inputClickable}
+                >
+                  {cantidadCargar !== "" ? (
+                    cantidadCargar
+                  ) : (
+                    <span style={{ color: "#94a3b8", fontSize: "18px" }}>
+                      Tocar para ingresar cantidad...
+                    </span>
+                  )}
+                </div>
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Fecha *</label>
@@ -550,7 +688,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
                   required
                   value={fechaIngreso}
                   onChange={(e) => setFechaIngreso(e.target.value)}
-                  style={styles.input}
+                  style={styles.inputDateFixed}
                 />
               </div>
 
@@ -615,19 +753,21 @@ export default function Insumos({ empleadoId, maquinaId }) {
             <form onSubmit={handleUsarInsumo}>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Cantidad a Retirar *</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="Ej: 50"
-                  required
-                  value={cantidadUsar}
-                  onChange={(e) => {
-                    setCantidadUsar(e.target.value);
-                    if (errorStock) setErrorStock("");
+                <div
+                  onClick={() => {
+                    setTipoAccionInsumo("usar");
+                    setTecladoInsumoAbierto(true);
                   }}
-                  style={styles.input}
-                />
+                  style={styles.inputClickable}
+                >
+                  {cantidadUsar !== "" ? (
+                    cantidadUsar
+                  ) : (
+                    <span style={{ color: "#94a3b8", fontSize: "18px" }}>
+                      Tocar para ingresar cantidad...
+                    </span>
+                  )}
+                </div>
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>Fecha *</label>
@@ -636,7 +776,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
                   required
                   value={fechaUso}
                   onChange={(e) => setFechaUso(e.target.value)}
-                  style={styles.input}
+                  style={styles.inputDateFixed}
                 />
               </div>
 
@@ -659,6 +799,83 @@ export default function Insumos({ empleadoId, maquinaId }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TECLADO TÁCTIL PARA INSUMOS */}
+      {tecladoInsumoAbierto && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalTecladoCardFull}>
+            <div style={styles.modalTecladoHeader}>
+              <span style={styles.modalTecladoTitulo}>Cantidad de Insumo</span>
+              <button
+                type="button"
+                onClick={() => setTecladoInsumoAbierto(false)}
+                style={styles.btnCloseModal}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={styles.modalClaveDisplay}>
+              {(tipoAccionInsumo === "cargar"
+                ? cantidadCargar
+                : cantidadUsar) !== "" ? (
+                tipoAccionInsumo === "cargar" ? (
+                  cantidadCargar
+                ) : (
+                  cantidadUsar
+                )
+              ) : (
+                <span style={{ color: "#94a3b8", fontSize: "28px" }}>0</span>
+              )}
+            </div>
+
+            <div style={styles.tecladoGridModalFull}>
+              {[
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "borrar",
+                "0",
+                "ok",
+              ].map((tecla) => {
+                let textoBoton = tecla;
+                let estiloBoton = styles.teclaBtnModalFull;
+
+                if (tecla === "borrar") {
+                  textoBoton = "⌫";
+                  estiloBoton = styles.teclaBorrarModalFull;
+                } else if (tecla === "ok") {
+                  textoBoton = "✓ OK";
+                  estiloBoton = styles.teclaOkModalFull;
+                }
+
+                return (
+                  <button
+                    key={tecla}
+                    type="button"
+                    onClick={() => {
+                      if (tecla === "ok") {
+                        setTecladoInsumoAbierto(false);
+                      } else {
+                        handleTecladoInsumoClick(tecla);
+                      }
+                    }}
+                    style={estiloBoton}
+                  >
+                    {textoBoton}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

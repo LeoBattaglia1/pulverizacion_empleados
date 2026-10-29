@@ -22,6 +22,9 @@ export default function App() {
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState(false);
 
+  const [modalTecladoAbierto, setModalTecladoAbierto] = useState(false);
+  const [modalMenuAbierto, setModalMenuAbierto] = useState(false);
+
   const [vistaActiva, setVistaActiva] = useState("menu");
 
   useEffect(() => {
@@ -91,11 +94,22 @@ export default function App() {
     }
   };
 
-  const handleIngresar = (e) => {
-    e.preventDefault();
+  const handleTecladoClick = (valor) => {
+    if (errorClave) setErrorClave(false);
 
+    if (valor === "borrar") {
+      setClaveIngresada((prev) => prev.slice(0, -1));
+    } else {
+      if (claveIngresada.length < 6) {
+        setClaveIngresada((prev) => prev + valor);
+      }
+    }
+  };
+
+  const handleIngresar = () => {
     if (claveIngresada !== CLAVE_ACCESO_SISTEMA) {
       setErrorClave(true);
+      setModalTecladoAbierto(false);
       return;
     }
 
@@ -106,12 +120,15 @@ export default function App() {
 
     setErrorClave(false);
     setSesionIniciada(true);
+    setModalTecladoAbierto(false);
+    setModalMenuAbierto(true);
     setVistaActiva("menu");
   };
 
-  const handleModificarDatos = () => {
+  const handleSalirSesion = () => {
     setSesionIniciada(false);
     setClaveIngresada("");
+    setModalMenuAbierto(false);
     setVistaActiva("menu");
   };
 
@@ -169,6 +186,12 @@ export default function App() {
               Máq: <strong style={{ color: "#34d399" }}>{nombreMaquina}</strong>
             </span>
           </div>
+          <button
+            onClick={() => setModalMenuAbierto(true)}
+            style={styles.btnAbrirMenuFlotante}
+          >
+            Menú Principal
+          </button>
         </div>
       )}
 
@@ -177,10 +200,10 @@ export default function App() {
           <div style={styles.formCard}>
             <div style={styles.headerForm}>
               <button
-                onClick={() => setVistaActiva("menu")}
+                onClick={() => setModalMenuAbierto(true)}
                 style={styles.btnVolver}
               >
-                ← Volver al Menú
+                ← Menú Principal
               </button>
             </div>
             <CargarTrabajo
@@ -188,17 +211,17 @@ export default function App() {
               maquinaId={maquinaSeleccionada}
               nombreEmpleado={nombreEmpleado}
               telefonoWhatsApp={TELEFONO_WHATSAPP}
-              onVolver={() => setVistaActiva("menu")}
+              onVolver={() => setModalMenuAbierto(true)}
             />
           </div>
         ) : vistaActiva === "consumo" ? (
           <div style={styles.formCard}>
             <div style={styles.headerForm}>
               <button
-                onClick={() => setVistaActiva("menu")}
+                onClick={() => setModalMenuAbierto(true)}
                 style={styles.btnVolver}
               >
-                ← Volver al Menú
+                ← Menú Principal
               </button>
               <h2 style={styles.tituloForm}>Consumos</h2>
             </div>
@@ -216,24 +239,10 @@ export default function App() {
               gap: "35px",
             }}
           >
-            <form
-              onSubmit={handleIngresar}
-              style={{
-                ...styles.formCard,
-                opacity: sesionIniciada ? 0.45 : 1,
-                pointerEvents: sesionIniciada ? "none" : "auto",
-                border: sesionIniciada
-                  ? "2px dashed #64748b"
-                  : "1px solid #cbd5e1",
-              }}
-            >
+            <div style={styles.formCard}>
               <div style={styles.loginBannerDecorativo}>
                 <div style={styles.bannerPuntoLuminoso}></div>
-                <span style={styles.bannerText}>
-                  {sesionIniciada
-                    ? "Acceso Verificado"
-                    : "Panel de Identificación"}
-                </span>
+                <span style={styles.bannerText}>Panel de Identificación</span>
               </div>
 
               <div style={styles.group}>
@@ -243,7 +252,6 @@ export default function App() {
                   value={empleadoSeleccionado}
                   onChange={handleEmpleadoChange}
                   style={styles.selectLarge}
-                  disabled={sesionIniciada}
                 >
                   <option
                     value=""
@@ -276,7 +284,6 @@ export default function App() {
                   value={maquinaSeleccionada}
                   onChange={handleMaquinaChange}
                   style={styles.selectLarge}
-                  disabled={sesionIniciada}
                 >
                   <option
                     value=""
@@ -306,7 +313,6 @@ export default function App() {
                     checked={vinculacionActiva}
                     onChange={(e) => setVinculacionActiva(e.target.checked)}
                     style={{ accentColor: "#059669", transform: "scale(1.4)" }}
-                    disabled={sesionIniciada}
                   />
                   Vinculación automática de equipo
                 </label>
@@ -314,21 +320,24 @@ export default function App() {
 
               <div style={styles.groupCentered}>
                 <label style={styles.labelCentered}>Clave de Acceso</label>
-                <input
-                  type="password"
-                  placeholder="••••"
-                  required
-                  value={claveIngresada}
-                  onChange={(e) => {
-                    setClaveIngresada(e.target.value);
-                    if (errorClave) setErrorClave(false);
-                  }}
-                  disabled={sesionIniciada}
+
+                <div
+                  onClick={() => setModalTecladoAbierto(true)}
                   style={{
                     ...styles.inputSmallKey,
                     borderColor: errorClave ? "#dc2626" : "#64748b",
+                    cursor: "pointer",
                   }}
-                />
+                >
+                  {claveIngresada ? (
+                    "•".repeat(claveIngresada.length)
+                  ) : (
+                    <span style={{ color: "#94a3b8", fontSize: "24px" }}>
+                      Tocar para ingresar clave...
+                    </span>
+                  )}
+                </div>
+
                 {errorClave && (
                   <span style={styles.errorText}>
                     Clave incorrecta. Intente nuevamente.
@@ -336,59 +345,151 @@ export default function App() {
                 )}
               </div>
 
-              {!sesionIniciada && (
-                <button type="submit" style={styles.btnIngresar}>
-                  INGRESAR
-                </button>
-              )}
-            </form>
-
-            {sesionIniciada && (
-              <div style={styles.menuGridDestacado}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#34d399",
-                      fontWeight: "900",
-                      fontSize: "1.7rem",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    ✓ Acceso Habilitado
-                  </span>
-                  <button
-                    onClick={handleModificarDatos}
-                    style={styles.btnCambiarDatosInicio}
-                  >
-                    Cambiar Operario/Máquina
-                  </button>
-                </div>
-
-                <button
-                  onClick={() => setVistaActiva("trabajo")}
-                  style={styles.btnMenuGigantePrimary}
-                >
-                  CARGAR TRABAJO
-                </button>
-
-                <button
-                  onClick={() => setVistaActiva("consumo")}
-                  style={styles.btnMenuGiganteSecondary}
-                >
-                  CONSUMOS
-                </button>
-              </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setModalTecladoAbierto(true)}
+                style={styles.btnIngresar}
+              >
+                INGRESAR AL SISTEMA
+              </button>
+            </div>
           </div>
         )}
       </main>
+
+      {modalTecladoAbierto && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalTecladoCardFull}>
+            <div style={styles.modalTecladoHeader}>
+              <span style={styles.modalTecladoTitulo}>Ingrese Clave</span>
+              <button
+                type="button"
+                onClick={() => setModalTecladoAbierto(false)}
+                style={styles.btnCloseModal}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={styles.modalClaveDisplay}>
+              {claveIngresada ? (
+                "•".repeat(claveIngresada.length)
+              ) : (
+                <span style={{ color: "#94a3b8", fontSize: "28px" }}>
+                  _ _ _ _
+                </span>
+              )}
+            </div>
+
+            <div style={styles.tecladoGridModalFull}>
+              {[
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "borrar",
+                "0",
+                "ok",
+              ].map((tecla) => {
+                let textoBoton = tecla;
+                let estiloBoton = styles.teclaBtnModalFull;
+
+                if (tecla === "borrar") {
+                  textoBoton = "⌫";
+                  estiloBoton = styles.teclaBorrarModalFull;
+                } else if (tecla === "ok") {
+                  textoBoton = "✓ OK";
+                  estiloBoton = styles.teclaOkModalFull;
+                }
+
+                return (
+                  <button
+                    key={tecla}
+                    type="button"
+                    onClick={() => {
+                      if (tecla === "ok") {
+                        handleIngresar();
+                      } else {
+                        handleTecladoClick(tecla);
+                      }
+                    }}
+                    style={estiloBoton}
+                  >
+                    {textoBoton}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalMenuAbierto && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalMenuCardFull}>
+            <div style={styles.menuModalHeader}>
+              <span
+                style={{
+                  color: "#34d399",
+                  fontWeight: "900",
+                  fontSize: "1.5rem",
+                  textTransform: "uppercase",
+                }}
+              >
+                ✓ Acceso Habilitado
+              </span>
+              <span
+                style={{
+                  fontSize: "1.3rem",
+                  color: "#94a3b8",
+                  fontWeight: "700",
+                }}
+              >
+                {nombreEmpleado} | {nombreMaquina}
+              </span>
+            </div>
+
+            <div style={styles.menuBotonesContainer}>
+              <button
+                onClick={() => {
+                  setModalMenuAbierto(false);
+                  setVistaActiva("trabajo");
+                }}
+                style={styles.btnMenuModalPrimary}
+              >
+                CARGAR TRABAJO
+              </button>
+
+              <button
+                onClick={() => {
+                  setModalMenuAbierto(false);
+                  setVistaActiva("consumo");
+                }}
+                style={styles.btnMenuModalSecondary}
+              >
+                CONSUMOS
+              </button>
+            </div>
+
+            <div
+              style={{
+                marginTop: "20px",
+                borderTop: "2px solid #334155",
+                paddingTop: "20px",
+              }}
+            >
+              <button onClick={handleSalirSesion} style={styles.btnSalirModal}>
+                SALIR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer style={styles.footer}>
         <img
@@ -477,6 +578,17 @@ const styles = {
     gap: "16px",
     fontSize: "1.4rem",
     fontWeight: "800",
+    flexWrap: "wrap",
+  },
+  btnAbrirMenuFlotante: {
+    backgroundColor: "#059669",
+    color: "#ffffff",
+    border: "none",
+    padding: "10px 18px",
+    borderRadius: "10px",
+    fontSize: "1.5rem",
+    fontWeight: "900",
+    cursor: "pointer",
   },
   content: {
     padding: "45px 20px",
@@ -551,22 +663,202 @@ const styles = {
     textAlign: "center",
   },
   inputSmallKey: {
-    padding: "28px 24px",
+    padding: "20px 24px",
     borderRadius: "18px",
     border: "3px solid #64748b",
-    fontSize: "25px",
+    fontSize: "28px",
     fontWeight: "900",
     textAlign: "center",
-    letterSpacing: "12px",
     backgroundColor: "#f8fafc",
     color: "#0f172a",
-    outline: "none",
     width: "100%",
-    maxWidth: "340px",
+    maxWidth: "100%",
+    minHeight: "85px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    boxShadow: "inset 0 4px 10px rgba(0,0,0,0.05)",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    zIndex: 9999,
     boxSizing: "border-box",
   },
+  modalTecladoCardFull: {
+    backgroundColor: "#ffffff",
+    padding: "35px 24px 50px 24px",
+    borderRadius: "36px 36px 0 0",
+    width: "100%",
+    maxWidth: "100%",
+    boxShadow: "0 -10px 40px rgba(0,0,0,0.5)",
+    borderTop: "5px solid #059669",
+    display: "flex",
+    flexDirection: "column",
+    gap: "25px",
+    boxSizing: "border-box",
+  },
+  modalTecladoHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "2px solid #f1f5f9",
+    paddingBottom: "15px",
+  },
+  modalTecladoTitulo: {
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    color: "#0f172a",
+    textTransform: "uppercase",
+  },
+  btnCloseModal: {
+    background: "#fee2e2",
+    border: "none",
+    borderRadius: "50%",
+    width: "55px",
+    height: "55px",
+    fontSize: "2rem",
+    fontWeight: "900",
+    color: "#991b1b",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalClaveDisplay: {
+    padding: "22px",
+    borderRadius: "18px",
+    backgroundColor: "#f8fafc",
+    border: "3px solid #64748b",
+    fontSize: "48px",
+    fontWeight: "900",
+    textAlign: "center",
+    letterSpacing: "14px",
+    color: "#0f172a",
+    minHeight: "85px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
+  tecladoGridModalFull: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "16px",
+    width: "100%",
+  },
+  teclaBtnModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.8rem",
+    fontWeight: "900",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    border: "3px solid #cbd5e1",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
+    textAlign: "center",
+  },
+  teclaBorrarModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.6rem",
+    fontWeight: "900",
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    border: "3px solid #fecaca",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
+    textAlign: "center",
+  },
+  teclaOkModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    backgroundColor: "#059669",
+    color: "#ffffff",
+    border: "3px solid #047857",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(5,150,105,0.3)",
+    textAlign: "center",
+  },
+  modalMenuCardFull: {
+    backgroundColor: "#0f172a",
+    padding: "45px 30px",
+    borderRadius: "32px",
+    width: "90%",
+    maxWidth: "500px",
+    boxShadow: "0 25px 60px rgba(0,0,0,0.6)",
+    border: "3px solid #34d399",
+    display: "flex",
+    flexDirection: "column",
+    gap: "30px",
+    boxSizing: "border-box",
+    margin: "auto",
+  },
+  menuModalHeader: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    borderBottom: "2px solid #334155",
+    paddingBottom: "16px",
+    textAlign: "center",
+  },
+  menuBotonesContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+  },
+  btnMenuModalPrimary: {
+    width: "100%",
+    padding: "40px 20px",
+    backgroundColor: "#059669",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "22px",
+    fontSize: "2.2rem",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 10px 30px rgba(5, 150, 105, 0.4)",
+    textAlign: "center",
+  },
+  btnMenuModalSecondary: {
+    width: "100%",
+    padding: "40px 20px",
+    backgroundColor: "#334155",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "22px",
+    fontSize: "2.2rem",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 10px 30px rgba(51, 65, 85, 0.4)",
+    textAlign: "center",
+  },
+  btnSalirModal: {
+    width: "100%",
+    padding: "25px",
+    backgroundColor: "#dc2626",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "18px",
+    fontSize: "2rem",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 8px 25px rgba(220, 38, 38, 0.4)",
+    textAlign: "center",
+  },
   errorText: {
-    fontSize: "1.1rem",
+    fontSize: "1.2rem",
     color: "#dc2626",
     fontWeight: "900",
   },
@@ -612,57 +904,6 @@ const styles = {
     fontWeight: "900",
     cursor: "pointer",
     boxShadow: "0 12px 35px rgba(5, 150, 105, 0.5)",
-    letterSpacing: "1px",
-  },
-  menuGridDestacado: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "25px",
-    width: "100%",
-    animation: "fadeIn 0.4s ease-in-out",
-    backgroundColor: "#0f172a",
-    padding: "35px 28px",
-    borderRadius: "32px",
-    boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
-    border: "2px solid #34d399",
-    boxSizing: "border-box",
-  },
-  btnCambiarDatosInicio: {
-    backgroundColor: "transparent",
-    color: "#f87171",
-    border: "1px solid #f87171",
-    padding: "8px 14px",
-    borderRadius: "8px",
-    fontSize: "1.85rem",
-    fontWeight: "800",
-    cursor: "pointer",
-  },
-  btnMenuGigantePrimary: {
-    width: "100%",
-    padding: "45px 24px",
-    backgroundColor: "#059669",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "24px",
-    fontSize: "1.8rem",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "0 14px 40px rgba(5, 150, 105, 0.5)",
-    textAlign: "center",
-    letterSpacing: "1px",
-  },
-  btnMenuGiganteSecondary: {
-    width: "100%",
-    padding: "45px 24px",
-    backgroundColor: "#334155",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "24px",
-    fontSize: "1.8rem",
-    fontWeight: "900",
-    cursor: "pointer",
-    boxShadow: "0 14px 40px rgba(51, 65, 85, 0.4)",
-    textAlign: "center",
     letterSpacing: "1px",
   },
   headerForm: {

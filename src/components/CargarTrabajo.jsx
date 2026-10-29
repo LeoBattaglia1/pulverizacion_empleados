@@ -28,6 +28,10 @@ export default function CargarTrabajo({
   const [guardando, setGuardando] = useState(false);
   const [mostrarAlertaExito, setMostrarAlertaExito] = useState(false);
 
+  // Estados para el teclado numérico flotante en hectáreas
+  const [tecladoHectareasAbierto, setTecladoHectareasAbierto] = useState(false);
+  const [loteActualId, setLoteActualId] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -176,6 +180,27 @@ export default function CargarTrabajo({
     });
   };
 
+  // Funciones para el teclado táctil de hectáreas
+  const handleTecladoHectareasClick = (valor) => {
+    if (loteActualId === null) return;
+    const actual = String(
+      lotesSeleccionadosData[loteActualId]?.hectareas || "",
+    );
+
+    if (valor === "borrar") {
+      const nuevoValor = actual.slice(0, -1);
+      handleActualizarLoteData(loteActualId, "hectareas", nuevoValor);
+    } else if (valor === ".") {
+      if (!actual.includes(".")) {
+        handleActualizarLoteData(loteActualId, "hectareas", actual + ".");
+      }
+    } else {
+      if (actual.length < 8) {
+        handleActualizarLoteData(loteActualId, "hectareas", actual + valor);
+      }
+    }
+  };
+
   const agregarNuevoLoteDirecto = async () => {
     if (!nuevoLoteNombre.trim() || !campoId || campoId === "nuevo") return;
     try {
@@ -306,7 +331,9 @@ export default function CargarTrabajo({
   );
 
   return (
-    <div style={{ position: "relative", width: "100%" }}>
+    <div
+      style={{ position: "relative", width: "100%", boxSizing: "border-box" }}
+    >
       <div style={styles.headerForm}>
         <h2 style={styles.tituloForm}>Nuevo Trabajo</h2>
       </div>
@@ -325,7 +352,10 @@ export default function CargarTrabajo({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ width: "100%", boxSizing: "border-box" }}
+      >
         {pasoActual === 1 && (
           <div style={{ width: "100%" }}>
             <div style={styles.fieldGroup}>
@@ -334,7 +364,7 @@ export default function CargarTrabajo({
                 type="date"
                 value={fechaTrabajo}
                 onChange={(e) => setFechaTrabajo(e.target.value)}
-                style={styles.input}
+                style={styles.inputDateFixed}
                 required
               />
             </div>
@@ -513,22 +543,23 @@ export default function CargarTrabajo({
                         <label style={styles.subLabel}>
                           Hectáreas Realizadas *
                         </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          pattern="[0-9]*"
-                          placeholder="0"
-                          value={datos.hectareas}
-                          onChange={(e) =>
-                            handleActualizarLoteData(
-                              loteIdStr,
-                              "hectareas",
-                              e.target.value,
-                            )
-                          }
-                          style={styles.inputNumberBig}
-                          required
-                        />
+                        <div
+                          onClick={() => {
+                            setLoteActualId(loteIdStr);
+                            setTecladoHectareasAbierto(true);
+                          }}
+                          style={styles.inputNumberBigClickable}
+                        >
+                          {datos.hectareas !== "" ? (
+                            datos.hectareas
+                          ) : (
+                            <span
+                              style={{ color: "#94a3b8", fontSize: "20px" }}
+                            >
+                              Tocar para ingresar hectáreas...
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div style={styles.fieldSubGroup}>
@@ -718,6 +749,85 @@ export default function CargarTrabajo({
         )}
       </form>
 
+      {/* MODAL TECLADO TÁCTIL PARA HECTÁREAS */}
+      {tecladoHectareasAbierto && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalTecladoCardFull}>
+            <div style={styles.modalTecladoHeader}>
+              <span style={styles.modalTecladoTitulo}>
+                Cantidad de Hectáreas
+              </span>
+              <button
+                type="button"
+                onClick={() => setTecladoHectareasAbierto(false)}
+                style={styles.btnCloseModal}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={styles.modalClaveDisplay}>
+              {loteActualId !== null &&
+              lotesSeleccionadosData[loteActualId]?.hectareas !== "" ? (
+                lotesSeleccionadosData[loteActualId].hectareas
+              ) : (
+                <span style={{ color: "#94a3b8", fontSize: "28px" }}>0</span>
+              )}
+            </div>
+
+            <div style={styles.tecladoGridModalFull}>
+              {[
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                ".",
+                "0",
+                "borrar",
+                "ok",
+              ].map((tecla) => {
+                let textoBoton = tecla;
+                let estiloBoton = styles.teclaBtnModalFull;
+
+                if (tecla === "borrar") {
+                  textoBoton = "⌫";
+                  estiloBoton = styles.teclaBorrarModalFull;
+                } else if (tecla === "ok") {
+                  textoBoton = "✓ OK";
+                  estiloBoton = styles.teclaOkModalFull;
+                  // Hacemos que ocupe más espacio o se destaque
+                }
+
+                return (
+                  <button
+                    key={tecla}
+                    type="button"
+                    onClick={() => {
+                      if (tecla === "ok") {
+                        setTecladoHectareasAbierto(false);
+                      } else {
+                        handleTecladoHectareasClick(tecla);
+                      }
+                    }}
+                    style={{
+                      ...estiloBoton,
+                      ...(tecla === "ok" ? { gridColumn: "span 3" } : {}),
+                    }}
+                  >
+                    {textoBoton}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {mostrarAlertaExito && (
         <div style={styles.toastAlert}>
           <div>
@@ -796,7 +906,19 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
-    appearance: "none",
+  },
+  inputDateFixed: {
+    padding: "24px 22px",
+    borderRadius: "18px",
+    border: "3px solid #64748b",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontSize: "25px",
+    fontWeight: "900",
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
+    outline: "none",
   },
   select: {
     padding: "30px 22px",
@@ -845,6 +967,7 @@ const styles = {
     gap: "14px",
     margin: "10px 0",
     width: "100%",
+    boxSizing: "border-box",
   },
   loteChip: (seleccionado) => ({
     padding: "20px 14px",
@@ -857,12 +980,14 @@ const styles = {
     textAlign: "center",
     cursor: "pointer",
     boxShadow: seleccionado ? "0 4px 12px rgba(5,150,105,0.2)" : "none",
+    boxSizing: "border-box",
   }),
   nuevoLoteRow: {
     display: "flex",
     gap: "12px",
     marginTop: "14px",
     width: "100%",
+    boxSizing: "border-box",
   },
   inputSmall: {
     flex: 1,
@@ -874,6 +999,7 @@ const styles = {
     fontSize: "25px",
     fontWeight: "900",
     outline: "none",
+    boxSizing: "border-box",
   },
   btnAgregarLote: {
     padding: "26px 30px",
@@ -891,6 +1017,7 @@ const styles = {
     gap: "24px",
     margin: "24px 0",
     width: "100%",
+    boxSizing: "border-box",
   },
   loteDetailCard: {
     backgroundColor: "#f8fafc",
@@ -917,24 +1044,27 @@ const styles = {
     flexDirection: "column",
     gap: "10px",
     width: "100%",
+    boxSizing: "border-box",
   },
-  inputNumberBig: {
-    padding: "30px",
+  inputNumberBigClickable: {
+    padding: "28px",
     borderRadius: "16px",
     border: "4px solid #059669",
-    fontSize: "25px",
+    fontSize: "32px",
     fontWeight: "900",
     color: "#065f46",
     backgroundColor: "#ecfdf5",
     width: "100%",
     boxSizing: "border-box",
-    outline: "none",
     textAlign: "center",
+    cursor: "pointer",
+    boxShadow: "inset 0 4px 10px rgba(0,0,0,0.04)",
   },
   actionsRowFull: {
     display: "flex",
     width: "100%",
     marginTop: "30px",
+    boxSizing: "border-box",
   },
   btnSiguienteFull: (isDisabled) => ({
     width: "100%",
@@ -948,6 +1078,7 @@ const styles = {
     cursor: isDisabled ? "not-allowed" : "pointer",
     boxShadow: isDisabled ? "none" : "0 10px 30px rgba(5, 150, 105, 0.4)",
     letterSpacing: "0.5px",
+    boxSizing: "border-box",
   }),
   actionsRowCustom: {
     display: "flex",
@@ -955,6 +1086,7 @@ const styles = {
     gap: "16px",
     marginTop: "30px",
     width: "100%",
+    boxSizing: "border-box",
   },
   btnAtrasSmall: {
     padding: "28px 30px",
@@ -966,6 +1098,7 @@ const styles = {
     fontWeight: "900",
     cursor: "pointer",
     flexShrink: 0,
+    boxSizing: "border-box",
   },
   btnSubmitFull: (activo) => ({
     flex: 1,
@@ -979,7 +1112,119 @@ const styles = {
     cursor: activo ? "pointer" : "not-allowed",
     boxShadow: activo ? "0 10px 30px rgba(5, 150, 105, 0.4)" : "none",
     letterSpacing: "0.5px",
+    boxSizing: "border-box",
   }),
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    zIndex: 9999,
+    boxSizing: "border-box",
+  },
+  modalTecladoCardFull: {
+    backgroundColor: "#ffffff",
+    padding: "35px 24px 50px 24px",
+    borderRadius: "36px 36px 0 0",
+    width: "100%",
+    maxWidth: "100%",
+    boxShadow: "0 -10px 40px rgba(0,0,0,0.5)",
+    borderTop: "5px solid #059669",
+    display: "flex",
+    flexDirection: "column",
+    gap: "25px",
+    boxSizing: "border-box",
+  },
+  modalTecladoHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "2px solid #f1f5f9",
+    paddingBottom: "15px",
+  },
+  modalTecladoTitulo: {
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    color: "#0f172a",
+    textTransform: "uppercase",
+  },
+  btnCloseModal: {
+    background: "#fee2e2",
+    border: "none",
+    borderRadius: "50%",
+    width: "55px",
+    height: "55px",
+    fontSize: "2rem",
+    fontWeight: "900",
+    color: "#991b1b",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalClaveDisplay: {
+    padding: "22px",
+    borderRadius: "18px",
+    backgroundColor: "#f8fafc",
+    border: "3px solid #64748b",
+    fontSize: "48px",
+    fontWeight: "900",
+    textAlign: "center",
+    color: "#0f172a",
+    minHeight: "85px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
+  tecladoGridModalFull: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "16px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  teclaBtnModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.8rem",
+    fontWeight: "900",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    border: "3px solid #cbd5e1",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
+    textAlign: "center",
+  },
+  teclaBorrarModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.6rem",
+    fontWeight: "900",
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    border: "3px solid #fecaca",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
+    textAlign: "center",
+  },
+  teclaOkModalFull: {
+    padding: "32px 10px",
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    backgroundColor: "#059669",
+    color: "#ffffff",
+    border: "3px solid #047857",
+    borderRadius: "22px",
+    cursor: "pointer",
+    boxShadow: "0 6px 15px rgba(5,150,105,0.3)",
+    textAlign: "center",
+  },
   toastAlert: {
     position: "fixed",
     bottom: "30px",
