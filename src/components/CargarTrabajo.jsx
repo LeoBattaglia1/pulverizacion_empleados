@@ -235,18 +235,18 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     const clienteObj = clientes.find((c) => Number(c.id) === Number(clienteId));
     const campoObj = campos.find((c) => Number(c.id) === Number(campoId));
 
-    let mensaje = `🚜 *NUEVO TRABAJO CARGADO*\n`;
-    mensaje += `📅 *Fecha:* ${fechaTrabajo}\n`;
-    mensaje += `👤 *Cliente:* ${clienteObj?.nombre || "N/A"}\n`;
-    mensaje += `🌾 *Campo:* ${campoObj?.nombre || "N/A"}\n\n`;
-    mensaje += `*Detalle por Lote:*\n`;
+    let mensaje = `NUEVO TRABAJO CARGADO\n`;
+    mensaje += `Fecha: ${fechaTrabajo}\n`;
+    mensaje += `Cliente: ${clienteObj?.nombre || "N/A"}\n`;
+    mensaje += `Campo: ${campoObj?.nombre || "N/A"}\n\n`;
+    mensaje += `Detalle por Lote:\n`;
 
     resumenTrabajo.forEach((item) => {
-      mensaje += `• *Lote ${item.lote}:* ${item.ha} Ha | ${item.tratamiento} | ${item.cultivo}\n`;
+      mensaje += `- Lote ${item.lote}: ${item.ha} Ha | ${item.tratamiento} | ${item.cultivo}\n`;
     });
 
     const url = `https://wa.me/${telefonoJefe}?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, "_blank");
+    window.location.href = url;
   };
 
   const handleSubmit = async (e) => {
@@ -274,11 +274,9 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           fecha: fechaTrabajo,
         };
 
-        // 1. Guardar el trabajo y obtener su ID
         const resTrabajo = await api.post("/trabajos", datosTrabajo);
         const trabajoId = resTrabajo.data.id || resTrabajo.data.insertId;
 
-        // 2. Crear el registro en pagos_clientes con los campos en 0
         await api.post("/pagos-clientes", {
           trabajo_id: Number(trabajoId),
           fecha: fechaTrabajo,
@@ -297,14 +295,13 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
         });
       }
 
-      // Mostrar alerta estilo Toast elegante en lugar del alert feo del sistema
       setMostrarAlertaExito(true);
 
       setTimeout(() => {
         enviarNotificacionWhatsApp(resumenParaWpp);
         setMostrarAlertaExito(false);
         onVolver();
-      }, 1500);
+      }, 1200);
     } catch (error) {
       console.error("Error al guardar el trabajo:", error);
     } finally {
@@ -317,23 +314,23 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   );
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", width: "100%" }}>
       {/* INDICADOR DE PASOS */}
       <div style={styles.wizardHeader}>
         <div style={styles.stepBadge(pasoActual === 1, pasoActual > 1)}>
           1. Ubicación y Fecha
         </div>
-        <span style={{ color: "#cbd5e1" }}>➔</span>
+        <span style={{ color: "#94a3b8" }}>➔</span>
         <div style={styles.stepBadge(pasoActual === 2, false)}>
           2. Lotes y Cultivos
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
         {pasoActual === 1 && (
-          <div>
+          <div style={{ width: "100%" }}>
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>📅 Fecha del Trabajo</label>
+              <label style={styles.label}>Fecha del Trabajo</label>
               <input
                 type="date"
                 value={fechaTrabajo}
@@ -344,7 +341,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
             </div>
 
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>👤 Cliente</label>
+              <label style={styles.label}>Cliente</label>
               <select
                 value={clienteId}
                 onChange={handleClienteChange}
@@ -357,22 +354,11 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                     {c.nombre}
                   </option>
                 ))}
-                <option value="nuevo">➕ Nuevo Cliente...</option>
+                <option value="nuevo">+ Nuevo Cliente...</option>
               </select>
 
               {clienteId === "nuevo" && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    marginTop: "8px",
-                    padding: "10px",
-                    backgroundColor: "#eff6ff",
-                    borderRadius: "8px",
-                    border: "1px dashed #3b82f6",
-                  }}
-                >
+                <div style={styles.subFormContainer}>
                   <input
                     type="text"
                     placeholder="Nombre del nuevo cliente *"
@@ -390,15 +376,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   <button
                     type="button"
                     onClick={confirmarCrearCliente}
-                    style={{
-                      padding: "10px",
-                      backgroundColor: "#2563eb",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "6px",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                    }}
+                    style={styles.btnSecundarioAccion}
                   >
                     Guardar Nuevo Cliente y Campo
                   </button>
@@ -407,7 +385,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
             </div>
 
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>🌾 Campo</label>
+              <label style={styles.label}>Campo</label>
               <select
                 value={campoId}
                 onChange={handleCampoChange}
@@ -424,23 +402,12 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                     </option>
                   ))}
                 {clienteId && clienteId !== "nuevo" && (
-                  <option value="nuevo">➕ Nuevo Campo...</option>
+                  <option value="nuevo">+ Nuevo Campo...</option>
                 )}
               </select>
 
               {campoId === "nuevo" && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    marginTop: "8px",
-                    padding: "10px",
-                    backgroundColor: "#eff6ff",
-                    borderRadius: "8px",
-                    border: "1px dashed #3b82f6",
-                  }}
-                >
+                <div style={styles.subFormContainer}>
                   <input
                     type="text"
                     placeholder="Nombre del nuevo campo *"
@@ -451,15 +418,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   <button
                     type="button"
                     onClick={confirmarCrearCampo}
-                    style={{
-                      padding: "10px",
-                      backgroundColor: "#2563eb",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "6px",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                    }}
+                    style={styles.btnSecundarioAccion}
                   >
                     Guardar Nuevo Campo
                   </button>
@@ -467,12 +426,12 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
               )}
             </div>
 
-            <div style={styles.actionsRow}>
+            <div style={styles.actionsRowFull}>
               <button
                 type="button"
                 onClick={() => setPasoActual(2)}
                 disabled={!paso1Valido}
-                style={styles.btnSiguiente(!paso1Valido)}
+                style={styles.btnSiguienteFull(!paso1Valido)}
               >
                 Siguiente ➔
               </button>
@@ -481,9 +440,9 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
         )}
 
         {pasoActual === 2 && (
-          <div>
+          <div style={{ width: "100%" }}>
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>📍 Seleccionar Lotes</label>
+              <label style={styles.label}>Seleccionar Lotes</label>
               <div style={styles.lotesGrid}>
                 {lotesDelCampoActual.map((lote) => {
                   const seleccionado = !!lotesSeleccionadosData[lote.id];
@@ -534,8 +493,10 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                         <label style={styles.subLabel}>
                           Hectáreas Realizadas *
                         </label>
+                        {/* En CargarTrabajo.jsx, sección hectáreas */}
                         <input
                           type="number"
+                          inputMode="decimal"
                           step="any"
                           value={datos.hectareas}
                           onChange={(e) =>
@@ -637,34 +598,34 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
               </div>
             )}
 
-            <div style={styles.actionsRow}>
+            {/* BOTONES DE ACCIÓN */}
+            <div style={styles.actionsRowCustom}>
               <button
                 type="button"
                 onClick={() => setPasoActual(1)}
-                style={styles.btnAtras}
+                style={styles.btnAtrasSmall}
               >
-                ⬅ Atrás
+                Atrás
               </button>
               <button
                 type="submit"
                 disabled={!paso2Valido || guardando}
-                style={styles.btnSubmit(paso2Valido && !guardando)}
+                style={styles.btnSubmitFull(paso2Valido && !guardando)}
               >
-                {guardando ? "Guardando..." : "💾 GUARDAR TRABAJO Y NOTIFICAR"}
+                {guardando ? "Guardando..." : "Guardar trabajo"}
               </button>
             </div>
           </div>
         )}
       </form>
 
-      {/* Cartel de Éxito Flotante Personalizado */}
+      {/* Cartel de Éxito Flotante */}
       {mostrarAlertaExito && (
         <div style={styles.toastAlert}>
-          <span style={{ fontSize: "1.4rem" }}>✅</span>
           <div>
-            <strong>¡Trabajo registrado!</strong>
-            <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
-              Abriendo WhatsApp...
+            <strong>Guardar trabajo</strong>
+            <div style={{ fontSize: "0.8rem", color: "#059669" }}>
+              Operación exitosa
             </div>
           </div>
         </div>
@@ -677,162 +638,218 @@ const styles = {
   wizardHeader: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    marginBottom: "16px",
+    justifyContent: "space-between",
+    marginBottom: "18px",
     paddingBottom: "12px",
     borderBottom: "1px solid #e2e8f0",
+    width: "100%",
   },
   stepBadge: (activo, completado) => ({
-    padding: "6px 12px",
+    padding: "6px 14px",
     borderRadius: "20px",
     fontSize: "0.8rem",
-    fontWeight: "700",
-    backgroundColor: activo ? "#2563eb" : completado ? "#dcfce7" : "#f1f5f9",
-    color: activo ? "#ffffff" : completado ? "#15803d" : "#64748b",
+    fontWeight: "800",
+    backgroundColor: activo ? "#059669" : completado ? "#d1fae5" : "#f1f5f9",
+    color: activo ? "#ffffff" : completado ? "#065f46" : "#64748b",
   }),
   fieldGroup: {
     display: "flex",
     flexDirection: "column",
     gap: "6px",
-    marginBottom: "14px",
+    marginBottom: "16px",
+    width: "100%",
+    boxSizing: "border-box",
   },
   label: {
-    fontSize: "0.9rem",
-    fontWeight: "700",
+    fontSize: "0.85rem",
+    fontWeight: "800",
     color: "#334155",
+    textTransform: "uppercase",
   },
   subLabel: {
     fontSize: "0.8rem",
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#475569",
   },
   input: {
-    padding: "12px",
-    borderRadius: "8px",
+    padding: "14px",
+    borderRadius: "10px",
     border: "1px solid #cbd5e1",
+    backgroundColor: "#ffffff", // FONDO BLANCO LIMPIO
+    color: "#0f172a",
     fontSize: "1rem",
+    width: "100%",
+    boxSizing: "border-box",
+    outline: "none",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+  },
+  select: {
+    padding: "14px",
+    borderRadius: "10px",
+    border: "1px solid #cbd5e1",
+    backgroundColor: "#ffffff", // FONDO BLANCO LIMPIO
+    color: "#0f172a",
+    fontSize: "1rem",
+    width: "100%",
+    boxSizing: "border-box",
+    outline: "none",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+  },
+  subFormContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    marginTop: "8px",
+    padding: "14px",
+    backgroundColor: "#f8fafc",
+    borderRadius: "10px",
+    border: "1px dashed #059669",
     width: "100%",
     boxSizing: "border-box",
   },
-  select: {
+  btnSecundarioAccion: {
     padding: "12px",
+    backgroundColor: "#059669",
+    color: "#fff",
+    border: "none",
     borderRadius: "8px",
-    border: "1px solid #cbd5e1",
-    fontSize: "1rem",
-    backgroundColor: "#fff",
-    width: "100%",
-    boxSizing: "border-box",
+    fontWeight: "800",
+    cursor: "pointer",
   },
   lotesGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
     gap: "8px",
     margin: "6px 0",
+    width: "100%",
   },
   loteChip: (seleccionado) => ({
-    padding: "10px",
-    borderRadius: "8px",
-    border: `2px solid ${seleccionado ? "#2563eb" : "#cbd5e1"}`,
-    backgroundColor: seleccionado ? "#eff6ff" : "#ffffff",
-    color: seleccionado ? "#1d4ed8" : "#334155",
-    fontWeight: "700",
+    padding: "12px",
+    borderRadius: "10px",
+    border: `2px solid ${seleccionado ? "#059669" : "#cbd5e1"}`,
+    backgroundColor: seleccionado ? "#ecfdf5" : "#ffffff",
+    color: seleccionado ? "#065f46" : "#334155",
+    fontWeight: "800",
     fontSize: "0.85rem",
     textAlign: "center",
+    cursor: "pointer",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
   }),
   nuevoLoteRow: {
     display: "flex",
     gap: "8px",
-    marginTop: "4px",
+    marginTop: "8px",
+    width: "100%",
   },
   inputSmall: {
     flex: 1,
-    padding: "8px 10px",
-    borderRadius: "6px",
+    padding: "10px 14px",
+    borderRadius: "8px",
     border: "1px solid #cbd5e1",
-    fontSize: "0.85rem",
+    backgroundColor: "#ffffff",
+    color: "#0f172a",
+    fontSize: "0.9rem",
+    outline: "none",
   },
   btnAgregarLote: {
-    padding: "8px 14px",
-    backgroundColor: "#0284c7",
+    padding: "10px 16px",
+    backgroundColor: "#059669",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
-    fontWeight: "700",
-    fontSize: "0.85rem",
+    borderRadius: "8px",
+    fontWeight: "800",
+    fontSize: "0.9rem",
+    cursor: "pointer",
   },
   lotesCardContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "12px",
-    margin: "14px 0",
+    gap: "14px",
+    margin: "16px 0",
+    width: "100%",
   },
   loteDetailCard: {
     backgroundColor: "#f8fafc",
     border: "1px solid #e2e8f0",
-    borderRadius: "10px",
-    padding: "14px",
+    borderRadius: "12px",
+    padding: "16px",
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
+    gap: "12px",
+    width: "100%",
+    boxSizing: "border-box",
   },
   loteTitle: {
-    fontSize: "0.95rem",
-    fontWeight: "800",
-    color: "#1e293b",
+    fontSize: "1rem",
+    fontWeight: "900",
+    color: "#065f46",
     borderBottom: "1px solid #cbd5e1",
-    paddingBottom: "4px",
+    paddingBottom: "6px",
   },
   fieldSubGroup: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
+    gap: "6px",
+    width: "100%",
   },
   inputNumberBig: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #93c5fd",
-    fontSize: "1.2rem",
-    fontWeight: "700",
-    color: "#1e3a8a",
-    backgroundColor: "#eff6ff",
+    padding: "14px",
+    borderRadius: "10px",
+    border: "1px solid #059669",
+    fontSize: "1.3rem",
+    fontWeight: "900",
+    color: "#065f46",
+    backgroundColor: "#ecfdf5",
     width: "100%",
     boxSizing: "border-box",
+    outline: "none",
   },
-  actionsRow: {
+  actionsRowFull: {
     display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
-    marginTop: "20px",
-  },
-  btnAtras: {
-    padding: "12px 20px",
-    backgroundColor: "#64748b",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "700",
-    cursor: "pointer",
-  },
-  btnSiguiente: (isDisabled) => ({
-    padding: "12px 24px",
-    backgroundColor: isDisabled ? "#cbd5e1" : "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontWeight: "700",
-    cursor: isDisabled ? "not-allowed" : "pointer",
     width: "100%",
+    marginTop: "24px",
+  },
+  btnSiguienteFull: (isDisabled) => ({
+    width: "100%",
+    padding: "16px",
+    backgroundColor: isDisabled ? "#cbd5e1" : "#059669",
+    color: "#fff",
+    border: "none",
+    borderRadius: "12px",
+    fontSize: "1rem",
+    fontWeight: "900",
+    cursor: isDisabled ? "not-allowed" : "pointer",
+    boxShadow: isDisabled ? "none" : "0 4px 15px rgba(5, 150, 105, 0.35)",
   }),
-  btnSubmit: (activo) => ({
+  actionsRowCustom: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    marginTop: "24px",
+    width: "100%",
+  },
+  btnAtrasSmall: {
+    padding: "14px 18px",
+    backgroundColor: "#e2e8f0",
+    color: "#334155",
+    border: "1px solid #cbd5e1",
+    borderRadius: "10px",
+    fontSize: "0.85rem",
+    fontWeight: "800",
+    cursor: "pointer",
+    flexShrink: 0,
+  },
+  btnSubmitFull: (activo) => ({
     flex: 1,
-    padding: "14px",
-    backgroundColor: activo ? "#16a34a" : "#cbd5e1",
+    padding: "16px",
+    backgroundColor: activo ? "#059669" : "#cbd5e1",
     color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    fontSize: "0.95rem",
-    fontWeight: "800",
+    borderRadius: "12px",
+    fontSize: "1rem",
+    fontWeight: "900",
     cursor: activo ? "pointer" : "not-allowed",
+    boxShadow: activo ? "0 4px 15px rgba(5, 150, 105, 0.35)" : "none",
   }),
   toastAlert: {
     position: "fixed",
@@ -841,15 +858,17 @@ const styles = {
     transform: "translateX(-50%)",
     backgroundColor: "#0f172a",
     color: "#ffffff",
-    padding: "12px 20px",
-    borderRadius: "10px",
+    padding: "14px 22px",
+    borderRadius: "12px",
     display: "flex",
     alignItems: "center",
     gap: "12px",
-    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25)",
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.6)",
     zIndex: 2000,
-    fontSize: "0.9rem",
+    fontSize: "0.95rem",
     borderLeft: "4px solid #10b981",
-    minWidth: "260px",
+    border: "1px solid #1e293b",
+    minWidth: "280px",
+    textAlign: "center",
   },
 };
