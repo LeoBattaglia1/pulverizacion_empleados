@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 
+// Función auxiliar para normalizar texto (elimina acentos y pasa a minúsculas)
+const normalizarTexto = (texto) => {
+  if (!texto) return "";
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+};
+
 export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const [pasoActual, setPasoActual] = useState(1);
 
@@ -21,9 +31,13 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const [nuevoCampoParaCliente, setNuevoCampoParaCliente] = useState("");
   const [nuevoCampoNombre, setNuevoCampoNombre] = useState("");
 
+  // Alertas en tiempo real para inputs
+  const [errorClienteInput, setErrorClienteInput] = useState("");
+  const [errorCampoInput, setErrorCampoInput] = useState("");
+  const [errorLoteInput, setErrorLoteInput] = useState("");
+
   const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
   const [textoLotesMultiples, setTextoLotesMultiples] = useState("");
-  // Almacena temporalmente los nombres de los lotes nuevos creados en esta sesión
   const [lotesNuevosSesion, setLotesNuevosSesion] = useState([]);
 
   const [guardando, setGuardando] = useState(false);
@@ -66,6 +80,49 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     setMensajeErrorValidacion("");
   };
 
+  // Validación en tiempo real al tipear el nombre del cliente
+  const handleClienteInputChange = (e) => {
+    const valor = e.target.value;
+    setNuevoClienteNombre(valor);
+    setErrorClienteInput("");
+
+    if (!valor.trim()) return;
+
+    const normIngresado = normalizarTexto(valor);
+    const existe = clientes.some(
+      (c) => normalizarTexto(c.nombre) === normIngresado,
+    );
+
+    if (existe) {
+      setErrorClienteInput(
+        `Atención: El cliente "${valor.trim()}" ya existe en el sistema.`,
+      );
+    }
+  };
+
+  // Validación en tiempo real al tipear el nombre del campo nuevo
+  const handleCampoInputChange = (valorTiTeado) => {
+    setNuevoCampoNombre(valorTiTeado);
+    setErrorCampoInput("");
+
+    if (!valorTiTeado.trim() || !clienteId) return;
+
+    const normIngresado = normalizarTexto(valorTiTeado);
+    const camposDelCliente = campos.filter(
+      (c) => Number(c.cliente_id) === Number(clienteId),
+    );
+
+    const existe = camposDelCliente.some(
+      (c) => normalizarTexto(c.nombre) === normIngresado,
+    );
+
+    if (existe) {
+      setErrorCampoInput(
+        `Atención: El campo "${valorTiTeado.trim()}" ya está agregado a este cliente.`,
+      );
+    }
+  };
+
   const confirmarCrearCliente = async () => {
     const nombreCli = nuevoClienteNombre.trim();
     const nombreCmp = nuevoCampoParaCliente.trim();
@@ -74,18 +131,21 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       setMensajeErrorValidacion("Complete el nombre del cliente y su campo.");
       return;
     }
-    setMensajeErrorValidacion("");
 
+    const normCli = normalizarTexto(nombreCli);
     const clienteExistente = clientes.some(
-      (c) => c.nombre.trim().toLowerCase() === nombreCli.toLowerCase(),
+      (c) => normalizarTexto(c.nombre) === normCli,
     );
 
     if (clienteExistente) {
-      setMensajeErrorValidacion(
+      setErrorClienteInput(
         `El cliente "${nombreCli}" ya existe en el sistema.`,
       );
       return;
     }
+
+    setMensajeErrorValidacion("");
+    setErrorClienteInput("");
 
     try {
       const resCli = await api.post("/clientes", { nombre: nombreCli });
@@ -110,6 +170,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       setCampoId(String(nuevoCmpId));
       setNuevoClienteNombre("");
       setNuevoCampoParaCliente("");
+      setErrorClienteInput("");
       setModalClienteAbierto(false);
     } catch (error) {
       console.error("Error al crear cliente y campo:", error);
@@ -119,20 +180,25 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const confirmarCrearCampo = async () => {
     const nombreCmp = nuevoCampoNombre.trim();
     if (!nombreCmp || !clienteId) return;
-    setMensajeErrorValidacion("");
 
-    const campoExistente = campos.some(
-      (c) =>
-        Number(c.cliente_id) === Number(clienteId) &&
-        c.nombre.trim().toLowerCase() === nombreCmp.toLowerCase(),
+    const normCmp = normalizarTexto(nombreCmp);
+    const camposDelCliente = campos.filter(
+      (c) => Number(c.cliente_id) === Number(clienteId),
+    );
+
+    const campoExistente = camposDelCliente.some(
+      (c) => normalizarTexto(c.nombre) === normCmp,
     );
 
     if (campoExistente) {
-      setMensajeErrorValidacion(
-        `El campo "${nombreCmp}" ya existe para este cliente.`,
+      setErrorCampoInput(
+        `El campo "${nombreCmp}" ya se encuentra agregado a este cliente.`,
       );
       return;
     }
+
+    setMensajeErrorValidacion("");
+    setErrorCampoInput("");
 
     try {
       const resCmp = await api.post("/campos", {
@@ -149,6 +215,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       setCampos((prev) => [...prev, cmpObj]);
       setCampoId(String(nuevoCmpId));
       setNuevoCampoNombre("");
+      setErrorCampoInput("");
       setModalCampoAbierto(false);
     } catch (error) {
       console.error("Error al crear campo:", error);
@@ -183,6 +250,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const procesarLotesMultiples = () => {
     if (!textoLotesMultiples.trim() || !campoId) return;
     setMensajeErrorValidacion("");
+    setErrorLoteInput("");
 
     const nombresLotes = textoLotesMultiples
       .split(",")
@@ -191,11 +259,31 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
 
     if (nombresLotes.length === 0) return;
 
+    const lotesExistentesEnCampo = lotes.filter(
+      (l) => Number(l.campo_id) === Number(campoId),
+    );
+
     const nuevosIdsAgregados = {};
     const nuevosNombresSesion = [...lotesNuevosSesion];
 
     for (const nombreLote of nombresLotes) {
-      // Usar un ID temporal negativo único basado en timestamp para identificar los nuevos antes de guardar
+      const normLote = normalizarTexto(nombreLote);
+
+      const yaExisteBD = lotesExistentesEnCampo.some(
+        (l) => normalizarTexto(l.numero_lote) === normLote,
+      );
+
+      const yaExisteSesion = nuevosNombresSesion.some(
+        (l) => normalizarTexto(l.numero_lote) === normLote,
+      );
+
+      if (yaExisteBD || yaExisteSesion) {
+        setErrorLoteInput(
+          `Error: El lote "${nombreLote}" ya se encuentra cargado para este campo.`,
+        );
+        return;
+      }
+
       const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
       nuevosNombresSesion.push({ tempId, numero_lote: nombreLote });
@@ -220,6 +308,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
       ...nuevosIdsAgregados,
     }));
     setTextoLotesMultiples("");
+    setErrorLoteInput("");
   };
 
   const eliminarLoteSesion = (idTarget) => {
@@ -306,17 +395,14 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
     setGuardando(true);
 
     try {
-      // 1. Guardar primero los lotes nuevos que se hayan creado en sesión
       const mapaIdsLotesFinales = {};
 
-      // Mapear los lotes existentes seleccionados (que ya tienen ID numérico real)
       for (const [key, data] of lotesActivosArray) {
         if (!data.esNuevo) {
           mapaIdsLotesFinales[key] = Number(key);
         }
       }
 
-      // Crear en la base de datos los lotes nuevos ingresados en esta sesión
       for (const [key, data] of lotesActivosArray) {
         if (data.esNuevo) {
           const resLote = await api.post("/lotes", {
@@ -328,7 +414,6 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
         }
       }
 
-      // 2. Guardar los trabajos con sus respectivos IDs de lotes reales
       for (const [loteKey, data] of lotesActivosArray) {
         const loteIdFinal = mapaIdsLotesFinales[loteKey];
         const tratamientoFinal =
@@ -365,7 +450,6 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
 
       setTimeout(() => {
         setMostrarAlertaExito(false);
-        // Resetear todo a 0 y volver al menú principal
         setPasoActual(1);
         setClienteId("");
         setCampoId("");
@@ -469,6 +553,8 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   onClick={() => {
                     setNuevoClienteNombre("");
                     setNuevoCampoParaCliente("");
+                    setErrorClienteInput("");
+                    setMensajeErrorValidacion("");
                     setModalClienteAbierto(true);
                   }}
                   style={styles.btnAccionExternaModal}
@@ -510,6 +596,8 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   type="button"
                   onClick={() => {
                     setNuevoCampoNombre("");
+                    setErrorCampoInput("");
+                    setMensajeErrorValidacion("");
                     setModalCampoAbierto(true);
                   }}
                   disabled={!clienteId}
@@ -575,6 +663,11 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   + Cargar Lotes
                 </button>
               </div>
+              {errorLoteInput && (
+                <div style={styles.alertaErrorInputInline}>
+                  ⚠️ {errorLoteInput}
+                </div>
+              )}
             </div>
 
             {lotesActivosArray.length > 0 && (
@@ -837,7 +930,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
               </button>
             </div>
             <div
-              style={{ display: "flex", flexDirection: "column", gap: "30px" }}
+              style={{ display: "flex", flexDirection: "column", gap: "25px" }}
             >
               <div style={styles.fieldGroup}>
                 <label style={styles.labelModal}>Nombre del Cliente *</label>
@@ -845,9 +938,14 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   type="text"
                   placeholder="Ej: Agropecuaria San José"
                   value={nuevoClienteNombre}
-                  onChange={(e) => setNuevoClienteNombre(e.target.value)}
+                  onChange={handleClienteInputChange}
                   style={styles.inputModalGigante}
                 />
+                {errorClienteInput && (
+                  <div style={styles.alertaErrorInputInline}>
+                    ⚠️ {errorClienteInput}
+                  </div>
+                )}
               </div>
               <div style={styles.fieldGroup}>
                 <label style={styles.labelModal}>Nombre del Campo *</label>
@@ -863,10 +961,14 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                 type="button"
                 onClick={confirmarCrearCliente}
                 disabled={
-                  !nuevoClienteNombre.trim() || !nuevoCampoParaCliente.trim()
+                  !nuevoClienteNombre.trim() ||
+                  !nuevoCampoParaCliente.trim() ||
+                  Boolean(errorClienteInput)
                 }
                 style={styles.btnModalConfirmar(
-                  !nuevoClienteNombre.trim() || !nuevoCampoParaCliente.trim(),
+                  !nuevoClienteNombre.trim() ||
+                    !nuevoCampoParaCliente.trim() ||
+                    Boolean(errorClienteInput),
                 )}
               >
                 Guardar Cliente y Campo
@@ -891,7 +993,7 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
               </button>
             </div>
             <div
-              style={{ display: "flex", flexDirection: "column", gap: "30px" }}
+              style={{ display: "flex", flexDirection: "column", gap: "25px" }}
             >
               <div style={styles.fieldGroup}>
                 <label style={styles.labelModal}>Nombre del Campo *</label>
@@ -899,15 +1001,22 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
                   type="text"
                   placeholder="Ej: El Retiro"
                   value={nuevoCampoNombre}
-                  onChange={(e) => setNuevoCampoNombre(e.target.value)}
+                  onChange={(e) => handleCampoInputChange(e.target.value)}
                   style={styles.inputModalGigante}
                 />
+                {errorCampoInput && (
+                  <div style={styles.alertaErrorInputInline}>
+                    ⚠️ {errorCampoInput}
+                  </div>
+                )}
               </div>
               <button
                 type="button"
                 onClick={confirmarCrearCampo}
-                disabled={!nuevoCampoNombre.trim()}
-                style={styles.btnModalConfirmar(!nuevoCampoNombre.trim())}
+                disabled={!nuevoCampoNombre.trim() || Boolean(errorCampoInput)}
+                style={styles.btnModalConfirmar(
+                  !nuevoCampoNombre.trim() || Boolean(errorCampoInput),
+                )}
               >
                 Guardar Nuevo Campo
               </button>
@@ -1043,6 +1152,16 @@ const styles = {
     fontWeight: "900",
     marginBottom: "20px",
     textAlign: "center",
+  },
+  alertaErrorInputInline: {
+    backgroundColor: "#fff1f2",
+    border: "2px solid #f43f5e",
+    color: "#be123c",
+    padding: "12px 16px",
+    borderRadius: "12px",
+    fontSize: "1.4rem",
+    fontWeight: "900",
+    marginTop: "8px",
   },
   wizardHeader: {
     display: "flex",
