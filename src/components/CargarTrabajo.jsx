@@ -49,9 +49,6 @@ export default function CargarTrabajo({
   const [mostrarAlertaExito, setMostrarAlertaExito] = useState(false);
   const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("");
 
-  const [tecladoHectareasAbierto, setTecladoHectareasAbierto] = useState(false);
-  const [loteActualId, setLoteActualId] = useState(null);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -358,26 +355,6 @@ export default function CargarTrabajo({
     });
   };
 
-  const handleTecladoHectareasClick = (valor) => {
-    if (loteActualId === null) return;
-    const actual = String(
-      lotesSeleccionadosData[loteActualId]?.hectareas || "",
-    );
-
-    if (valor === "borrar") {
-      const nuevoValor = actual.slice(0, -1);
-      handleActualizarLoteData(loteActualId, "hectareas", nuevoValor);
-    } else if (valor === ".") {
-      if (!actual.includes(".")) {
-        handleActualizarLoteData(loteActualId, "hectareas", actual + ".");
-      }
-    } else {
-      if (actual.length < 8) {
-        handleActualizarLoteData(loteActualId, "hectareas", actual + valor);
-      }
-    }
-  };
-
   const lotesActivosArray = Object.entries(lotesSeleccionadosData);
 
   const paso1Valido = Boolean(fechaTrabajo && clienteId && campoId);
@@ -450,13 +427,16 @@ export default function CargarTrabajo({
         });
       }
 
-      // ── ENVÍO AUTOMÁTICO DE WHATSAPP POR DETRÁS DE ESCENA ──
+      // ── REDIRECCIÓN NATIVA A WHATSAPP (FORZANDO APP MÓVIL) ──
       if (telefonoWhatsApp) {
         const mensajeWpp = encodeURIComponent(
           `Hola, se ha registrado un nuevo trabajo de pulverización exitosamente para la fecha ${fechaTrabajo}.`,
         );
-        const urlWpp = `https://api.whatsapp.com/send?phone=${telefonoWhatsApp}&text=${mensajeWpp}`;
-        window.open(urlWpp, "_blank");
+        // Usa whatsapp://send para abrir directamente la app del celular con el chat y texto precargado
+        const urlWpp = `whatsapp://send?phone=${telefonoWhatsApp}&text=${mensajeWpp}`;
+
+        // Ejecuta la redirección nativa
+        window.location.href = urlWpp;
       }
 
       setGuardando(false);
@@ -719,27 +699,26 @@ export default function CargarTrabajo({
                         )}
                       </div>
 
+                      {/* INPUT NATIVO NUMÉRICO PARA HECTÁREAS */}
                       <div style={styles.fieldSubGroup}>
                         <label style={styles.subLabel}>
                           Hectáreas Realizadas *
                         </label>
-                        <div
-                          onClick={() => {
-                            setLoteActualId(loteIdStr);
-                            setTecladoHectareasAbierto(true);
-                          }}
-                          style={styles.inputNumberBigClickable}
-                        >
-                          {datos.hectareas !== "" ? (
-                            datos.hectareas
-                          ) : (
-                            <span
-                              style={{ color: "#94a3b8", fontSize: "20px" }}
-                            >
-                              Tocar para ingresar hectáreas...
-                            </span>
-                          )}
-                        </div>
+                        <input
+                          type="number"
+                          step="any"
+                          placeholder="Ingrese hectáreas..."
+                          value={datos.hectareas}
+                          onChange={(e) =>
+                            handleActualizarLoteData(
+                              loteIdStr,
+                              "hectareas",
+                              e.target.value,
+                            )
+                          }
+                          style={styles.inputHectareasNativo}
+                          required
+                        />
                       </div>
 
                       <div style={styles.fieldSubGroup}>
@@ -1039,83 +1018,6 @@ export default function CargarTrabajo({
         </div>
       )}
 
-      {tecladoHectareasAbierto && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalTecladoCardFull}>
-            <div style={styles.modalTecladoHeader}>
-              <span style={styles.modalTecladoTitulo}>
-                Cantidad de Hectáreas
-              </span>
-              <button
-                type="button"
-                onClick={() => setTecladoHectareasAbierto(false)}
-                style={styles.btnCloseModal}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={styles.modalClaveDisplay}>
-              {loteActualId !== null &&
-              lotesSeleccionadosData[loteActualId]?.hectareas !== "" ? (
-                lotesSeleccionadosData[loteActualId].hectareas
-              ) : (
-                <span style={{ color: "#94a3b8", fontSize: "28px" }}>0</span>
-              )}
-            </div>
-
-            <div style={styles.tecladoGridModalFull}>
-              {[
-                "1",
-                "2",
-                "3",
-                "4",
-                "5",
-                "6",
-                "7",
-                "8",
-                "9",
-                ".",
-                "0",
-                "borrar",
-                "ok",
-              ].map((tecla) => {
-                let textoBoton = tecla;
-                let estiloBoton = styles.teclaBtnModalFull;
-
-                if (tecla === "borrar") {
-                  textoBoton = "⌫";
-                  estiloBoton = styles.teclaBorrarModalFull;
-                } else if (tecla === "ok") {
-                  textoBoton = "✓ OK";
-                  estiloBoton = styles.teclaOkModalFull;
-                }
-
-                return (
-                  <button
-                    key={tecla}
-                    type="button"
-                    onClick={() => {
-                      if (tecla === "ok") {
-                        setTecladoHectareasAbierto(false);
-                      } else {
-                        handleTecladoHectareasClick(tecla);
-                      }
-                    }}
-                    style={{
-                      ...estiloBoton,
-                      ...(tecla === "ok" ? { gridColumn: "span 3" } : {}),
-                    }}
-                  >
-                    {textoBoton}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
       {mostrarAlertaExito && (
         <div style={styles.toastAlertGigante}>
           <div style={{ fontSize: "3.2rem", fontWeight: "900" }}>
@@ -1233,6 +1135,20 @@ const styles = {
     maxWidth: "100%",
     boxSizing: "border-box",
     outline: "none",
+  },
+  inputHectareasNativo: {
+    padding: "28px",
+    borderRadius: "16px",
+    border: "4px solid #059669",
+    fontSize: "32px",
+    fontWeight: "900",
+    color: "#065f46",
+    backgroundColor: "#ecfdf5",
+    width: "100%",
+    boxSizing: "border-box",
+    textAlign: "center",
+    outline: "none",
+    boxShadow: "inset 0 4px 10px rgba(0,0,0,0.04)",
   },
   inputFechaCompacta: {
     padding: "22px 20px",
@@ -1388,20 +1304,6 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
   },
-  inputNumberBigClickable: {
-    padding: "28px",
-    borderRadius: "16px",
-    border: "4px solid #059669",
-    fontSize: "32px",
-    fontWeight: "900",
-    color: "#065f46",
-    backgroundColor: "#ecfdf5",
-    width: "100%",
-    boxSizing: "border-box",
-    textAlign: "center",
-    cursor: "pointer",
-    boxShadow: "inset 0 4px 10px rgba(0,0,0,0.04)",
-  },
   actionsRowFull: {
     display: "flex",
     width: "100%",
@@ -1519,35 +1421,6 @@ const styles = {
     boxShadow: isDisabled ? "none" : "0 10px 30px rgba(37, 99, 235, 0.4)",
     marginTop: "15px",
   }),
-  modalTecladoCardFull: {
-    backgroundColor: "#ffffff",
-    padding: "35px 24px 50px 24px",
-    borderRadius: "36px 36px 0 0",
-    width: "100%",
-    maxWidth: "100%",
-    boxShadow: "0 -10px 40px rgba(0,0,0,0.5)",
-    borderTop: "5px solid #059669",
-    display: "flex",
-    flexDirection: "column",
-    gap: "25px",
-    boxSizing: "border-box",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-  },
-  modalTecladoHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "2px solid #f1f5f9",
-    paddingBottom: "15px",
-  },
-  modalTecladoTitulo: {
-    fontSize: "2.4rem",
-    fontWeight: "900",
-    color: "#0f172a",
-    textTransform: "uppercase",
-  },
   btnCloseModal: {
     background: "#fee2e2",
     border: "none",
@@ -1561,64 +1434,6 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-  },
-  modalClaveDisplay: {
-    padding: "22px",
-    borderRadius: "18px",
-    backgroundColor: "#f8fafc",
-    border: "3px solid #64748b",
-    fontSize: "48px",
-    fontWeight: "900",
-    textAlign: "center",
-    color: "#0f172a",
-    minHeight: "85px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxSizing: "border-box",
-  },
-  tecladoGridModalFull: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "16px",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  teclaBtnModalFull: {
-    padding: "32px 10px",
-    fontSize: "2.8rem",
-    fontWeight: "900",
-    backgroundColor: "#f8fafc",
-    color: "#0f172a",
-    border: "3px solid #cbd5e1",
-    borderRadius: "22px",
-    cursor: "pointer",
-    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
-    textAlign: "center",
-  },
-  teclaBorrarModalFull: {
-    padding: "32px 10px",
-    fontSize: "2.6rem",
-    fontWeight: "900",
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
-    border: "3px solid #fecaca",
-    borderRadius: "22px",
-    cursor: "pointer",
-    boxShadow: "0 6px 15px rgba(0,0,0,0.06)",
-    textAlign: "center",
-  },
-  teclaOkModalFull: {
-    padding: "32px 10px",
-    fontSize: "2.4rem",
-    fontWeight: "900",
-    backgroundColor: "#059669",
-    color: "#ffffff",
-    border: "3px solid #047857",
-    borderRadius: "22px",
-    cursor: "pointer",
-    boxShadow: "0 6px 15px rgba(5,150,105,0.3)",
-    textAlign: "center",
   },
   toastAlertGigante: {
     position: "fixed",
