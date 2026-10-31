@@ -20,7 +20,7 @@ const styles = {
     backgroundColor: "#ffffff",
     borderRadius: "28px",
     border: `4px solid ${colorBorde}`,
-    padding: "30px 24px",
+    padding: "30px 24px 40px 24px", // Añadido padding inferior para la leyenda flotante
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -97,6 +97,7 @@ const styles = {
     display: "flex",
     gap: "16px",
     width: "100%",
+    position: "relative",
   },
   btnCargarStock: {
     flex: 1,
@@ -112,8 +113,12 @@ const styles = {
     letterSpacing: "0.5px",
     boxSizing: "border-box",
   },
-  btnUsarStock: {
+  contenedorBotonRetirar: {
     flex: 1,
+    position: "relative",
+  },
+  btnUsarStock: {
+    width: "100%",
     padding: "24px",
     backgroundColor: "#dc2626",
     color: "#ffffff",
@@ -125,6 +130,16 @@ const styles = {
     boxShadow: "0 6px 20px rgba(220, 38, 38, 0.4)",
     letterSpacing: "0.5px",
     boxSizing: "border-box",
+  },
+  leyendaRetirar: {
+    position: "absolute",
+    top: "calc(100% + 4px)",
+    right: 0,
+    color: "#dc2626",
+    fontSize: "1.2rem",
+    fontWeight: "800",
+    textAlign: "right",
+    whiteSpace: "nowrap",
   },
   modalOverlay: {
     position: "fixed",
@@ -142,9 +157,9 @@ const styles = {
   },
   modalCard: {
     backgroundColor: "#ffffff",
-    padding: "70px 50px", // Mismo tamaño grande que el modal principal
+    padding: "70px 50px",
     borderRadius: "36px",
-    maxWidth: "900px", // Ampliado para ocupar gran pantalla
+    maxWidth: "900px",
     width: "95%",
     maxHeight: "95vh",
     overflowY: "auto",
@@ -252,23 +267,30 @@ const styles = {
     fontWeight: "900",
     textAlign: "center",
   },
-  toastContainer: {
+  toastOverlayCenter: {
     position: "fixed",
-    bottom: "24px",
-    right: "24px",
-    zIndex: 9999,
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(15, 23, 42, 0.85)",
+    zIndex: 99999,
     display: "flex",
-    flexDirection: "column",
-    gap: "8px",
+    justifyContent: "center",
+    alignItems: "center",
+    boxSizing: "border-box",
+    padding: "20px",
   },
-  toast: (tipo) => ({
-    padding: "16px 24px",
-    borderRadius: "12px",
-    color: "#fff",
-    fontSize: "1.4rem",
-    fontWeight: "800",
-    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.3)",
+  toastCardCenter: (tipo) => ({
     backgroundColor: tipo === "error" ? "#dc2626" : "#059669",
+    color: "#ffffff",
+    padding: "40px 60px",
+    borderRadius: "24px",
+    fontSize: "2.4rem",
+    fontWeight: "900",
+    textAlign: "center",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+    letterSpacing: "0.5px",
   }),
   modalTecladoCardFull: {
     backgroundColor: "#ffffff",
@@ -394,13 +416,14 @@ const paletaColoresBarril = [
 
 export default function Insumos({ empleadoId, maquinaId }) {
   const [insumos, setInsumos] = useState([]);
-  const [toasts, setToasts] = useState([]);
+  const [toastActual, setToastActual] = useState(null);
 
   const [modalCargarAbierto, setModalCargarAbierto] = useState(false);
   const [modalUsarAbierto, setModalUsarAbierto] = useState(false);
   const [insumoSeleccionado, setInsumoSeleccionado] = useState(null);
 
   const [cantidadCargar, setCantidadCargar] = useState("");
+  const [montoTotal, setMontoTotal] = useState("");
   const [fechaIngreso, setFechaIngreso] = useState(
     new Date().toISOString().split("T")[0],
   );
@@ -415,11 +438,10 @@ export default function Insumos({ empleadoId, maquinaId }) {
   const [tipoAccionInsumo, setTipoAccionInsumo] = useState("");
 
   const mostrarToast = (mensaje, tipo = "success") => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, mensaje, tipo }]);
+    setToastActual({ mensaje, tipo });
     setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3500);
+      setToastActual(null);
+    }, 2000);
   };
 
   const cargarInsumos = async () => {
@@ -455,16 +477,23 @@ export default function Insumos({ empleadoId, maquinaId }) {
   }, []);
 
   const handleTecladoInsumoClick = (valor) => {
-    const actual =
-      tipoAccionInsumo === "cargar" ? cantidadCargar : cantidadUsar;
-    const setActual =
-      tipoAccionInsumo === "cargar" ? setCantidadCargar : setCantidadUsar;
-
-    if (valor === "borrar") {
-      setActual(actual.slice(0, -1));
+    if (tipoAccionInsumo === "cargar") {
+      if (valor === "borrar") {
+        setCantidadCargar((prev) => prev.slice(0, -1));
+      } else {
+        setCantidadCargar((prev) => (prev.length < 8 ? prev + valor : prev));
+      }
+    } else if (tipoAccionInsumo === "monto") {
+      if (valor === "borrar") {
+        setMontoTotal((prev) => prev.slice(0, -1));
+      } else {
+        setMontoTotal((prev) => (prev.length < 8 ? prev + valor : prev));
+      }
     } else {
-      if (actual.length < 8) {
-        setActual(actual + valor);
+      if (valor === "borrar") {
+        setCantidadUsar((prev) => prev.slice(0, -1));
+      } else {
+        setCantidadUsar((prev) => (prev.length < 8 ? prev + valor : prev));
       }
     }
   };
@@ -477,6 +506,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
       await api.post("/insumos/ingresos", {
         insumo_id: Number(insumoSeleccionado.id),
         cantidad: Number(cantidadCargar),
+        monto_total: montoTotal !== "" ? Number(montoTotal) : 0,
         fecha: fechaIngreso,
         empleado_id: empleadoId ? Number(empleadoId) : null,
         maquina_id: maquinaId ? Number(maquinaId) : null,
@@ -484,7 +514,8 @@ export default function Insumos({ empleadoId, maquinaId }) {
 
       setModalCargarAbierto(false);
       setCantidadCargar("");
-      mostrarToast("Stock repuesto correctamente");
+      setMontoTotal("");
+      mostrarToast("Operación exitosa");
       cargarInsumos();
     } catch (error) {
       console.error("Error al registrar ingreso:", error);
@@ -518,7 +549,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
       setModalUsarAbierto(false);
       setCantidadUsar("");
       setErrorStock("");
-      mostrarToast("Retiro registrado con éxito");
+      mostrarToast("Operación exitosa");
       cargarInsumos();
     } catch (error) {
       console.error("Error al registrar retiro:", error);
@@ -528,13 +559,13 @@ export default function Insumos({ empleadoId, maquinaId }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.toastContainer}>
-        {toasts.map((t) => (
-          <div key={t.id} style={styles.toast(t.tipo)}>
-            {t.mensaje}
+      {toastActual && (
+        <div style={styles.toastOverlayCenter}>
+          <div style={styles.toastCardCenter(toastActual.tipo)}>
+            {toastActual.mensaje}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       <div style={styles.grid}>
         {insumos.map((i, index) => {
@@ -605,6 +636,7 @@ export default function Insumos({ empleadoId, maquinaId }) {
                   onClick={() => {
                     setInsumoSeleccionado(i);
                     setCantidadCargar("");
+                    setMontoTotal("");
                     setFechaIngreso(new Date().toISOString().split("T")[0]);
                     setModalCargarAbierto(true);
                   }}
@@ -612,18 +644,23 @@ export default function Insumos({ empleadoId, maquinaId }) {
                 >
                   Reponer
                 </button>
-                <button
-                  onClick={() => {
-                    setInsumoSeleccionado(i);
-                    setCantidadUsar("");
-                    setFechaUso(new Date().toISOString().split("T")[0]);
-                    setErrorStock("");
-                    setModalUsarAbierto(true);
-                  }}
-                  style={styles.btnUsarStock}
-                >
-                  Retirar
-                </button>
+                <div style={styles.contenedorBotonRetirar}>
+                  <button
+                    onClick={() => {
+                      setInsumoSeleccionado(i);
+                      setCantidadUsar("");
+                      setFechaUso(new Date().toISOString().split("T")[0]);
+                      setErrorStock("");
+                      setModalUsarAbierto(true);
+                    }}
+                    style={styles.btnUsarStock}
+                  >
+                    Retirar
+                  </button>
+                  <span style={styles.leyendaRetirar}>
+                    para cargar la máquina
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -681,6 +718,26 @@ export default function Insumos({ empleadoId, maquinaId }) {
                   )}
                 </div>
               </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Monto Total Gastado</label>
+                <div
+                  onClick={() => {
+                    setTipoAccionInsumo("monto");
+                    setTecladoInsumoAbierto(true);
+                  }}
+                  style={styles.inputClickable}
+                >
+                  {montoTotal !== "" ? (
+                    montoTotal
+                  ) : (
+                    <span style={{ color: "#94a3b8", fontSize: "20px" }}>
+                      Tocar para ingresar monto...
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <div style={styles.formGroup}>
                 <label style={styles.label}>Fecha *</label>
                 <input
@@ -807,7 +864,11 @@ export default function Insumos({ empleadoId, maquinaId }) {
         <div style={styles.modalOverlay}>
           <div style={styles.modalTecladoCardFull}>
             <div style={styles.modalTecladoHeader}>
-              <span style={styles.modalTecladoTitulo}>Cantidad de Insumo</span>
+              <span style={styles.modalTecladoTitulo}>
+                {tipoAccionInsumo === "monto"
+                  ? "Monto Total Gastado"
+                  : "Cantidad de Insumo"}
+              </span>
               <button
                 type="button"
                 onClick={() => setTecladoInsumoAbierto(false)}
@@ -818,14 +879,12 @@ export default function Insumos({ empleadoId, maquinaId }) {
             </div>
 
             <div style={styles.modalClaveDisplay}>
-              {(tipoAccionInsumo === "cargar"
-                ? cantidadCargar
-                : cantidadUsar) !== "" ? (
-                tipoAccionInsumo === "cargar" ? (
-                  cantidadCargar
-                ) : (
-                  cantidadUsar
-                )
+              {tipoAccionInsumo === "cargar" && cantidadCargar !== "" ? (
+                cantidadCargar
+              ) : tipoAccionInsumo === "monto" && montoTotal !== "" ? (
+                montoTotal
+              ) : tipoAccionInsumo === "usar" && cantidadUsar !== "" ? (
+                cantidadUsar
               ) : (
                 <span style={{ color: "#94a3b8", fontSize: "28px" }}>0</span>
               )}

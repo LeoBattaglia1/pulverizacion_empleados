@@ -180,10 +180,14 @@ export default function App() {
         <div style={styles.barraSesionModulo}>
           <div style={styles.infoModuloTexto}>
             <span>
-              Op: <strong>{nombreEmpleado}</strong>
+              Op:{" "}
+              <strong style={{ fontSize: "1.8rem" }}>{nombreEmpleado}</strong>
             </span>
             <span>
-              Máq: <strong style={{ color: "#34d399" }}>{nombreMaquina}</strong>
+              Máq:{" "}
+              <strong style={{ color: "#34d399", fontSize: "1.8rem" }}>
+                {nombreMaquina}
+              </strong>
             </span>
           </div>
           <button
@@ -503,18 +507,18 @@ const styles = {
   header: {
     backgroundColor: "#000000",
     color: "#ffffff",
-    padding: "52px 24px 44px 24px",
+    padding: "40px 20px 30px 20px",
     textAlign: "center",
-    boxShadow: "0 8px 30px rgba(0,0,0,0.3)",
+    boxShadow: "0 10px 35px rgba(0,0,0,0.35)",
     position: "relative",
     width: "100%",
     boxSizing: "border-box",
   },
   headerTopBar: {
-    marginBottom: "12px",
+    marginBottom: "8px",
   },
   headerSubtitle: {
-    fontSize: "1.9rem",
+    fontSize: "1.8rem",
     textTransform: "uppercase",
     letterSpacing: "3px",
     color: "#34d399",
@@ -525,14 +529,15 @@ const styles = {
     bottom: 0,
     left: "50%",
     transform: "translateX(-50%)",
-    width: "160px",
+    width: "180px",
     height: "6px",
     backgroundColor: "#059669",
     borderRadius: "3px",
   },
   tituloHeader: {
     margin: 0,
-    fontSize: "3.4rem",
+    fontSize: "3.2rem", // Ajustado para que luzca grande pero respete el espacio
+    lineHeight: "1.25", // Soluciona el problema de que el texto quede pisado
     fontWeight: "900",
     color: "#ffffff",
     letterSpacing: "1px",
@@ -541,36 +546,38 @@ const styles = {
   barraSesionModulo: {
     backgroundColor: "#0f172a",
     color: "#ffffff",
-    padding: "16px 24px",
+    padding: "20px 24px",
     display: "flex",
-    flexDirection: "column", // Pone el botón debajo si no entra a lo ancho
+    flexDirection: "column",
     alignItems: "stretch",
-    gap: "14px",
-    borderBottom: "2px solid #34d399",
+    gap: "16px",
+    borderBottom: "3px solid #34d399",
     width: "100%",
     boxSizing: "border-box",
     boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
   },
   infoModuloTexto: {
     display: "flex",
-    gap: "16px",
-    fontSize: "1.4rem",
+    gap: "24px",
+    fontSize: "1.6rem",
     fontWeight: "800",
     flexWrap: "wrap",
     justifyContent: "center",
     textAlign: "center",
   },
   btnAbrirMenuFlotante: {
-    backgroundColor: "#059669",
+    backgroundColor: "#1e3a8a", // Color azul corporativo distinto al verde
     color: "#ffffff",
-    border: "none",
-    padding: "16px 20px",
-    borderRadius: "14px",
-    fontSize: "1.6rem",
+    border: "3px solid #3b82f6",
+    padding: "22px 24px", // Más alto y cómodo para tocar
+    borderRadius: "16px",
+    fontSize: "1.8rem",
     fontWeight: "900",
     cursor: "pointer",
     width: "100%",
     boxSizing: "border-box",
+    boxShadow: "0 8px 25px rgba(30, 58, 138, 0.4)",
+    letterSpacing: "0.5px",
   },
   content: {
     padding: "45px 20px",
@@ -812,11 +819,11 @@ const styles = {
   menuBotonesContainer: {
     display: "flex",
     flexDirection: "column",
-    gap: "24px", // Botones más separados
+    gap: "24px",
   },
   btnMenuModalPrimary: {
     width: "100%",
-    padding: "42px 20px", // Botones ligeramente más chicos y cómodos
+    padding: "42px 20px",
     backgroundColor: "#059669",
     color: "#ffffff",
     border: "none",

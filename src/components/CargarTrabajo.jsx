@@ -1,13 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 
-export default function CargarTrabajo({
-  empleadoId,
-  maquinaId,
-  nombreEmpleado,
-  telefonoWhatsApp,
-  onVolver,
-}) {
+export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
   const [pasoActual, setPasoActual] = useState(1);
 
   const [clientes, setClientes] = useState([]);
@@ -20,11 +14,18 @@ export default function CargarTrabajo({
   const [clienteId, setClienteId] = useState("");
   const [campoId, setCampoId] = useState("");
 
+  // Modales para Nuevos Registros
+  const [modalClienteAbierto, setModalClienteAbierto] = useState(false);
+  const [modalCampoAbierto, setModalCampoAbierto] = useState(false);
   const [nuevoClienteNombre, setNuevoClienteNombre] = useState("");
+  const [nuevoCampoParaCliente, setNuevoCampoParaCliente] = useState("");
   const [nuevoCampoNombre, setNuevoCampoNombre] = useState("");
 
   const [lotesSeleccionadosData, setLotesSeleccionadosData] = useState({});
-  const [nuevoLoteNombre, setNuevoLoteNombre] = useState("");
+  const [textoLotesMultiples, setTextoLotesMultiples] = useState("");
+  // Almacena temporalmente los nombres de los lotes nuevos creados en esta sesión
+  const [lotesNuevosSesion, setLotesNuevosSesion] = useState([]);
+
   const [guardando, setGuardando] = useState(false);
   const [mostrarAlertaExito, setMostrarAlertaExito] = useState(false);
   const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("");
@@ -53,27 +54,28 @@ export default function CargarTrabajo({
   const handleClienteChange = (e) => {
     setClienteId(e.target.value);
     setCampoId("");
-    setNuevoClienteNombre("");
-    setNuevoCampoNombre("");
     setLotesSeleccionadosData({});
+    setLotesNuevosSesion([]);
     setMensajeErrorValidacion("");
   };
 
   const handleCampoChange = (e) => {
     setCampoId(e.target.value);
-    setNuevoCampoNombre("");
     setLotesSeleccionadosData({});
+    setLotesNuevosSesion([]);
     setMensajeErrorValidacion("");
   };
 
   const confirmarCrearCliente = async () => {
     const nombreCli = nuevoClienteNombre.trim();
-    const nombreCmp = nuevoCampoNombre.trim();
+    const nombreCmp = nuevoCampoParaCliente.trim();
 
-    if (!nombreCli || !nombreCmp) return;
+    if (!nombreCli || !nombreCmp) {
+      setMensajeErrorValidacion("Complete el nombre del cliente y su campo.");
+      return;
+    }
     setMensajeErrorValidacion("");
 
-    // Validar si ya existe un cliente con el mismo nombre (ignorando mayúsculas/minúsculas)
     const clienteExistente = clientes.some(
       (c) => c.nombre.trim().toLowerCase() === nombreCli.toLowerCase(),
     );
@@ -107,7 +109,8 @@ export default function CargarTrabajo({
       setClienteId(String(nuevoCliId));
       setCampoId(String(nuevoCmpId));
       setNuevoClienteNombre("");
-      setNuevoCampoNombre("");
+      setNuevoCampoParaCliente("");
+      setModalClienteAbierto(false);
     } catch (error) {
       console.error("Error al crear cliente y campo:", error);
     }
@@ -118,7 +121,6 @@ export default function CargarTrabajo({
     if (!nombreCmp || !clienteId) return;
     setMensajeErrorValidacion("");
 
-    // Validar si ya existe un campo con ese nombre para este cliente
     const campoExistente = campos.some(
       (c) =>
         Number(c.cliente_id) === Number(clienteId) &&
@@ -147,6 +149,7 @@ export default function CargarTrabajo({
       setCampos((prev) => [...prev, cmpObj]);
       setCampoId(String(nuevoCmpId));
       setNuevoCampoNombre("");
+      setModalCampoAbierto(false);
     } catch (error) {
       console.error("Error al crear campo:", error);
     }
@@ -175,6 +178,57 @@ export default function CargarTrabajo({
         };
       }
     });
+  };
+
+  const procesarLotesMultiples = () => {
+    if (!textoLotesMultiples.trim() || !campoId) return;
+    setMensajeErrorValidacion("");
+
+    const nombresLotes = textoLotesMultiples
+      .split(",")
+      .map((n) => n.trim())
+      .filter((n) => n.length > 0);
+
+    if (nombresLotes.length === 0) return;
+
+    const nuevosIdsAgregados = {};
+    const nuevosNombresSesion = [...lotesNuevosSesion];
+
+    for (const nombreLote of nombresLotes) {
+      // Usar un ID temporal negativo único basado en timestamp para identificar los nuevos antes de guardar
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+      nuevosNombresSesion.push({ tempId, numero_lote: nombreLote });
+
+      const lotesAnteriores = Object.values(lotesSeleccionadosData);
+      const ultimoLote = lotesAnteriores[lotesAnteriores.length - 1] || {};
+
+      nuevosIdsAgregados[tempId] = {
+        esNuevo: true,
+        numero_lote: nombreLote,
+        hectareas: "",
+        tratamiento: ultimoLote.tratamiento || "",
+        tratamientoOtro: ultimoLote.tratamientoOtro || "",
+        tipoCultivo: ultimoLote.tipoCultivo || "",
+        tipoCultivoOtro: ultimoLote.tipoCultivoOtro || "",
+      };
+    }
+
+    setLotesNuevosSesion(nuevosNombresSesion);
+    setLotesSeleccionadosData((prev) => ({
+      ...prev,
+      ...nuevosIdsAgregados,
+    }));
+    setTextoLotesMultiples("");
+  };
+
+  const eliminarLoteSesion = (idTarget) => {
+    setLotesSeleccionadosData((prev) => {
+      const copia = { ...prev };
+      delete copia[idTarget];
+      return copia;
+    });
+    setLotesNuevosSesion((prev) => prev.filter((l) => l.tempId !== idTarget));
   };
 
   const handleActualizarLoteData = (loteIdTarget, campo, valor) => {
@@ -230,69 +284,9 @@ export default function CargarTrabajo({
     }
   };
 
-  const agregarNuevoLoteDirecto = async () => {
-    const nombreLoteStr = nuevoLoteNombre.trim();
-    if (!nombreLoteStr || !campoId || campoId === "nuevo") return;
-    setMensajeErrorValidacion("");
-
-    // Validar si ya existe un lote con ese número/nombre en el campo actual
-    const loteExistente = lotes.some(
-      (l) =>
-        Number(l.campo_id) === Number(campoId) &&
-        String(l.numero_lote).trim().toLowerCase() ===
-          nombreLoteStr.toLowerCase(),
-    );
-
-    if (loteExistente) {
-      setMensajeErrorValidacion(
-        `El lote "${nombreLoteStr}" ya existe en este campo.`,
-      );
-      return;
-    }
-
-    try {
-      const res = await api.post("/lotes", {
-        campo_id: Number(campoId),
-        numero_lote: nombreLoteStr,
-      });
-
-      const nuevoLoteObj = {
-        id: res.data.id || Date.now(),
-        campo_id: Number(campoId),
-        numero_lote: nombreLoteStr,
-      };
-
-      setLotes((prev) => [...prev, nuevoLoteObj]);
-
-      const lotesAnteriores = Object.values(lotesSeleccionadosData);
-      const ultimoLote = lotesAnteriores[lotesAnteriores.length - 1] || {};
-
-      setLotesSeleccionadosData((prev) => ({
-        ...prev,
-        [nuevoLoteObj.id]: {
-          hectareas: "",
-          tratamiento: ultimoLote.tratamiento || "",
-          tratamientoOtro: ultimoLote.tratamientoOtro || "",
-          tipoCultivo: ultimoLote.tipoCultivo || "",
-          tipoCultivoOtro: ultimoLote.tipoCultivoOtro || "",
-        },
-      }));
-
-      setNuevoLoteNombre("");
-    } catch (error) {
-      console.error("Error al crear nuevo lote:", error);
-    }
-  };
-
   const lotesActivosArray = Object.entries(lotesSeleccionadosData);
 
-  const paso1Valido = Boolean(
-    fechaTrabajo &&
-    clienteId &&
-    clienteId !== "nuevo" &&
-    campoId &&
-    campoId !== "nuevo",
-  );
+  const paso1Valido = Boolean(fechaTrabajo && clienteId && campoId);
 
   const paso2Valido =
     lotesActivosArray.length > 0 &&
@@ -305,23 +299,6 @@ export default function CargarTrabajo({
         (data.tipoCultivo !== "otro" ? data.tipoCultivo : data.tipoCultivoOtro),
     );
 
-  const enviarNotificacionWhatsApp = () => {
-    const campoObj = campos.find((c) => Number(c.id) === Number(campoId));
-    const nombreCampo = campoObj?.nombre || "N/A";
-    const cantidadLotes = lotesActivosArray.length;
-
-    const totalHectareas = lotesActivosArray.reduce((acc, [, data]) => {
-      return acc + (Number(data.hectareas) || 0);
-    }, 0);
-
-    const mensaje = `Nuevo trabajo\nFecha: ${fechaTrabajo}\nOperario: ${nombreEmpleado}\nCampo: ${nombreCampo}\nCantidad de lotes: ${cantidadLotes}\nCantidad de hectáreas: ${totalHectareas}`;
-
-    const url = `whatsapp://send?phone=${telefonoWhatsApp}&text=${encodeURIComponent(
-      mensaje,
-    )}`;
-    window.location.href = url;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!paso2Valido) return;
@@ -329,14 +306,38 @@ export default function CargarTrabajo({
     setGuardando(true);
 
     try {
-      for (const [loteIdStr, data] of lotesActivosArray) {
+      // 1. Guardar primero los lotes nuevos que se hayan creado en sesión
+      const mapaIdsLotesFinales = {};
+
+      // Mapear los lotes existentes seleccionados (que ya tienen ID numérico real)
+      for (const [key, data] of lotesActivosArray) {
+        if (!data.esNuevo) {
+          mapaIdsLotesFinales[key] = Number(key);
+        }
+      }
+
+      // Crear en la base de datos los lotes nuevos ingresados en esta sesión
+      for (const [key, data] of lotesActivosArray) {
+        if (data.esNuevo) {
+          const resLote = await api.post("/lotes", {
+            campo_id: Number(campoId),
+            numero_lote: data.numero_lote,
+          });
+          const loteIdReal = resLote.data.id || resLote.data.insertId;
+          mapaIdsLotesFinales[key] = Number(loteIdReal);
+        }
+      }
+
+      // 2. Guardar los trabajos con sus respectivos IDs de lotes reales
+      for (const [loteKey, data] of lotesActivosArray) {
+        const loteIdFinal = mapaIdsLotesFinales[loteKey];
         const tratamientoFinal =
           data.tratamiento === "otro" ? data.tratamientoOtro : data.tratamiento;
         const cultivoFinal =
           data.tipoCultivo === "otro" ? data.tipoCultivoOtro : data.tipoCultivo;
 
         const datosTrabajo = {
-          lote_id: Number(loteIdStr),
+          lote_id: Number(loteIdFinal),
           maquina_id: Number(maquinaId),
           empleado_id: Number(empleadoId),
           cantidad_hectareas: Number(data.hectareas),
@@ -359,16 +360,22 @@ export default function CargarTrabajo({
         });
       }
 
+      setGuardando(false);
       setMostrarAlertaExito(true);
 
       setTimeout(() => {
-        enviarNotificacionWhatsApp();
         setMostrarAlertaExito(false);
+        // Resetear todo a 0 y volver al menú principal
+        setPasoActual(1);
+        setClienteId("");
+        setCampoId("");
+        setLotesSeleccionadosData({});
+        setLotesNuevosSesion([]);
+        setTextoLotesMultiples("");
         onVolver();
-      }, 3200);
+      }, 3000);
     } catch (error) {
       console.error("Error al guardar el trabajo:", error);
-    } finally {
       setGuardando(false);
     }
   };
@@ -434,110 +441,83 @@ export default function CargarTrabajo({
 
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Cliente</label>
-              <select
-                value={clienteId}
-                onChange={handleClienteChange}
-                style={styles.select}
-                required
-              >
-                <option value="" style={{ fontSize: "10px", padding: "12px" }}>
-                  -- Seleccionar Cliente --
-                </option>
-                {clientes.map((c) => (
-                  <option
-                    key={c.id}
-                    value={c.id}
-                    style={{ fontSize: "10px", padding: "12px" }}
-                  >
-                    {c.nombre}
-                  </option>
-                ))}
-                <option
-                  value="nuevo"
-                  style={{ fontSize: "10px", padding: "12px" }}
+              <div style={styles.selectWithButtonRow}>
+                <select
+                  value={clienteId}
+                  onChange={handleClienteChange}
+                  style={styles.select}
+                  required
                 >
-                  + Nuevo Cliente...
-                </option>
-              </select>
-
-              {clienteId === "nuevo" && (
-                <div style={styles.subFormContainer}>
-                  <input
-                    type="text"
-                    placeholder="Nombre del nuevo cliente *"
-                    value={nuevoClienteNombre}
-                    onChange={(e) => setNuevoClienteNombre(e.target.value)}
-                    style={styles.input}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Nombre del primer campo (Obligatorio) *"
-                    value={nuevoCampoNombre}
-                    onChange={(e) => setNuevoCampoNombre(e.target.value)}
-                    style={styles.input}
-                  />
-                  <button
-                    type="button"
-                    onClick={confirmarCrearCliente}
-                    style={styles.btnSecundarioAccion}
+                  <option
+                    value=""
+                    style={{ fontSize: "16px", padding: "12px" }}
                   >
-                    Guardar Nuevo Cliente y Campo
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>Campo</label>
-              <select
-                value={campoId}
-                onChange={handleCampoChange}
-                style={styles.select}
-                disabled={!clienteId || clienteId === "nuevo"}
-                required
-              >
-                <option value="" style={{ fontSize: "10px", padding: "12px" }}>
-                  -- Seleccionar Campo --
-                </option>
-                {campos
-                  .filter((c) => Number(c.cliente_id) === Number(clienteId))
-                  .map((c) => (
+                    -- Seleccionar Cliente --
+                  </option>
+                  {clientes.map((c) => (
                     <option
                       key={c.id}
                       value={c.id}
-                      style={{ fontSize: "10px", padding: "12px" }}
+                      style={{ fontSize: "18px", padding: "12px" }}
                     >
                       {c.nombre}
                     </option>
                   ))}
-                {clienteId && clienteId !== "nuevo" && (
-                  <option
-                    value="nuevo"
-                    style={{ fontSize: "10px", padding: "12px" }}
-                  >
-                    + Nuevo Campo...
-                  </option>
-                )}
-              </select>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNuevoClienteNombre("");
+                    setNuevoCampoParaCliente("");
+                    setModalClienteAbierto(true);
+                  }}
+                  style={styles.btnAccionExternaModal}
+                >
+                  + Nuevo Cliente
+                </button>
+              </div>
+            </div>
 
-              {campoId === "nuevo" && (
-                <div style={styles.subFormContainer}>
-                  <input
-                    type="text"
-                    placeholder="Nombre del nuevo campo *"
-                    value={nuevoCampoNombre}
-                    onChange={(e) => setNuevoCampoNombre(e.target.value)}
-                    style={styles.input}
-                  />
-                  <button
-                    type="button"
-                    onClick={confirmarCrearCampo}
-                    style={styles.btnSecundarioAccion}
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Campo</label>
+              <div style={styles.selectWithButtonRow}>
+                <select
+                  value={campoId}
+                  onChange={handleCampoChange}
+                  style={styles.select}
+                  disabled={!clienteId}
+                  required
+                >
+                  <option
+                    value=""
+                    style={{ fontSize: "16px", padding: "12px" }}
                   >
-                    Guardar Nuevo Campo
-                  </button>
-                </div>
-              )}
+                    -- Seleccionar Campo --
+                  </option>
+                  {campos
+                    .filter((c) => Number(c.cliente_id) === Number(clienteId))
+                    .map((c) => (
+                      <option
+                        key={c.id}
+                        value={c.id}
+                        style={{ fontSize: "18px", padding: "12px" }}
+                      >
+                        {c.nombre}
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNuevoCampoNombre("");
+                    setModalCampoAbierto(true);
+                  }}
+                  disabled={!clienteId}
+                  style={styles.btnAccionExternaModal}
+                >
+                  + Nuevo Campo
+                </button>
+              </div>
             </div>
 
             <div style={styles.actionsRowFull}>
@@ -556,7 +536,7 @@ export default function CargarTrabajo({
         {pasoActual === 2 && (
           <div style={{ width: "100%" }}>
             <div style={styles.fieldGroup}>
-              <label style={styles.label}>Seleccionar Lotes</label>
+              <label style={styles.label}>Seleccionar Lotes Existentes</label>
               <div style={styles.lotesGrid}>
                 {lotesDelCampoActual.map((lote) => {
                   const seleccionado = !!lotesSeleccionadosData[lote.id];
@@ -571,21 +551,28 @@ export default function CargarTrabajo({
                   );
                 })}
               </div>
+            </div>
 
+            <div style={styles.fieldGroup}>
+              <label style={styles.label}>Nuevos Lotes</label>
+              <div style={styles.ayudaCargaBox}>
+                Escribi los lotes separados por , . Ejemplo:{" "}
+                <code>1, 2, 3, Norte</code>
+              </div>
               <div style={styles.nuevoLoteRow}>
                 <input
                   type="text"
-                  placeholder="Escribir nombre o número de lote..."
-                  value={nuevoLoteNombre}
-                  onChange={(e) => setNuevoLoteNombre(e.target.value)}
+                  placeholder="Ej: 1, 2, 3, Norte..."
+                  value={textoLotesMultiples}
+                  onChange={(e) => setTextoLotesMultiples(e.target.value)}
                   style={styles.inputLoteLibre}
                 />
                 <button
                   type="button"
-                  onClick={agregarNuevoLoteDirecto}
+                  onClick={procesarLotesMultiples}
                   style={styles.btnAgregarLote}
                 >
-                  + Lote
+                  + Cargar Lotes
                 </button>
               </div>
             </div>
@@ -596,10 +583,33 @@ export default function CargarTrabajo({
                   const loteObj = lotes.find(
                     (l) => Number(l.id) === Number(loteIdStr),
                   );
+                  const nombreLoteMostrar = datos.esNuevo
+                    ? datos.numero_lote
+                    : loteObj?.numero_lote || loteIdStr;
+
                   return (
                     <div key={loteIdStr} style={styles.loteDetailCard}>
-                      <div style={styles.loteTitle}>
-                        Lote {loteObj?.numero_lote || loteIdStr}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          borderBottom: "3px solid #cbd5e1",
+                          paddingBottom: "12px",
+                        }}
+                      >
+                        <div style={styles.loteTitle}>
+                          Lote {nombreLoteMostrar}
+                        </div>
+                        {datos.esNuevo && (
+                          <button
+                            type="button"
+                            onClick={() => eliminarLoteSesion(loteIdStr)}
+                            style={styles.btnEliminarLoteSesion}
+                          >
+                            Eliminar Lote
+                          </button>
+                        )}
                       </div>
 
                       <div style={styles.fieldSubGroup}>
@@ -641,43 +651,43 @@ export default function CargarTrabajo({
                         >
                           <option
                             value=""
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "16px", padding: "12px" }}
                           >
                             Seleccionar...
                           </option>
                           <option
                             value="Barbecho"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Barbecho
                           </option>
                           <option
                             value="Pre-emergente"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Pre-emergente
                           </option>
                           <option
                             value="Post-emergente"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Post-emergente
                           </option>
                           <option
                             value="Clearsol"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Clearsol
                           </option>
                           <option
                             value="Hoja Ancha"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Hoja Ancha
                           </option>
                           <option
                             value="otro"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Otro
                           </option>
@@ -716,55 +726,55 @@ export default function CargarTrabajo({
                         >
                           <option
                             value=""
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "16px", padding: "12px" }}
                           >
                             Seleccionar...
                           </option>
                           <option
                             value="Girasol"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Girasol
                           </option>
                           <option
                             value="Maíz"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Maíz
                           </option>
                           <option
                             value="Soja"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Soja
                           </option>
                           <option
                             value="Trigo"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Trigo
                           </option>
                           <option
                             value="Sorgo"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Sorgo
                           </option>
                           <option
                             value="Avena"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Avena
                           </option>
                           <option
                             value="Cebada"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Cebada
                           </option>
                           <option
                             value="otro"
-                            style={{ fontSize: "10px", padding: "12px" }}
+                            style={{ fontSize: "18px", padding: "12px" }}
                           >
                             Otro
                           </option>
@@ -811,6 +821,100 @@ export default function CargarTrabajo({
           </div>
         )}
       </form>
+
+      {/* MODAL NUEVO CLIENTE (GIGANTE) */}
+      {modalClienteAbierto && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalCardGigante}>
+            <div style={styles.modalHeader}>
+              <span style={styles.modalTitulo}>Registrar Nuevo Cliente</span>
+              <button
+                type="button"
+                onClick={() => setModalClienteAbierto(false)}
+                style={styles.btnCloseModal}
+              >
+                ✕
+              </button>
+            </div>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "30px" }}
+            >
+              <div style={styles.fieldGroup}>
+                <label style={styles.labelModal}>Nombre del Cliente *</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Agropecuaria San José"
+                  value={nuevoClienteNombre}
+                  onChange={(e) => setNuevoClienteNombre(e.target.value)}
+                  style={styles.inputModalGigante}
+                />
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.labelModal}>Nombre del Campo *</label>
+                <input
+                  type="text"
+                  placeholder="Ej: Campo La Blanqueada"
+                  value={nuevoCampoParaCliente}
+                  onChange={(e) => setNuevoCampoParaCliente(e.target.value)}
+                  style={styles.inputModalGigante}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={confirmarCrearCliente}
+                disabled={
+                  !nuevoClienteNombre.trim() || !nuevoCampoParaCliente.trim()
+                }
+                style={styles.btnModalConfirmar(
+                  !nuevoClienteNombre.trim() || !nuevoCampoParaCliente.trim(),
+                )}
+              >
+                Guardar Cliente y Campo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO CAMPO (GIGANTE) */}
+      {modalCampoAbierto && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalCardGigante}>
+            <div style={styles.modalHeader}>
+              <span style={styles.modalTitulo}>Registrar Nuevo Campo</span>
+              <button
+                type="button"
+                onClick={() => setModalCampoAbierto(false)}
+                style={styles.btnCloseModal}
+              >
+                ✕
+              </button>
+            </div>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "30px" }}
+            >
+              <div style={styles.fieldGroup}>
+                <label style={styles.labelModal}>Nombre del Campo *</label>
+                <input
+                  type="text"
+                  placeholder="Ej: El Retiro"
+                  value={nuevoCampoNombre}
+                  onChange={(e) => setNuevoCampoNombre(e.target.value)}
+                  style={styles.inputModalGigante}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={confirmarCrearCampo}
+                disabled={!nuevoCampoNombre.trim()}
+                style={styles.btnModalConfirmar(!nuevoCampoNombre.trim())}
+              >
+                Guardar Nuevo Campo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {tecladoHectareasAbierto && (
         <div style={styles.modalOverlay}>
@@ -890,14 +994,12 @@ export default function CargarTrabajo({
       )}
 
       {mostrarAlertaExito && (
-        <div style={styles.toastAlert}>
-          <div>
-            <strong>Guardar trabajo</strong>
-            <div
-              style={{ fontSize: "1.5rem", color: "#34d399", marginTop: "4px" }}
-            >
-              Operación exitosa
-            </div>
+        <div style={styles.toastAlertGigante}>
+          <div style={{ fontSize: "3.2rem", fontWeight: "900" }}>
+            ¡TRABAJO GUARDADO CON ÉXITO!
+          </div>
+          <div style={{ fontSize: "1.8rem", color: "#a7f3d0" }}>
+            Volviendo al menú principal...
           </div>
         </div>
       )}
@@ -974,6 +1076,12 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: "0.8px",
   },
+  labelModal: {
+    fontSize: "1.8rem",
+    fontWeight: "900",
+    color: "#0f172a",
+    textTransform: "uppercase",
+  },
   subLabel: {
     fontSize: "1.8rem",
     fontWeight: "900",
@@ -1006,7 +1114,15 @@ const styles = {
     boxSizing: "border-box",
     outline: "none",
   },
+  selectWithButtonRow: {
+    display: "flex",
+    gap: "14px",
+    alignItems: "center",
+    width: "100%",
+    boxSizing: "border-box",
+  },
   select: {
+    flex: 1,
     padding: "30px 22px",
     borderRadius: "18px",
     border: "3px solid #64748b",
@@ -1025,31 +1141,30 @@ const styles = {
     backgroundPosition: "right 22px center",
     backgroundSize: "32px",
   },
-  subFormContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-    marginTop: "14px",
-    padding: "20px",
-    backgroundColor: "#f8fafc",
-    borderRadius: "16px",
-    border: "2px dashed #059669",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  btnSecundarioAccion: {
-    padding: "24px",
-    backgroundColor: "#059669",
-    color: "#fff",
+  btnAccionExternaModal: {
+    padding: "28px 24px",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "14px",
+    borderRadius: "18px",
+    fontSize: "1.6rem",
     fontWeight: "900",
     cursor: "pointer",
-    fontSize: "1.8rem",
+    whiteSpace: "nowrap",
+    boxShadow: "0 6px 20px rgba(37, 99, 235, 0.3)",
+  },
+  ayudaCargaBox: {
+    backgroundColor: "#ecfdf5",
+    border: "2px dashed #059669",
+    padding: "16px 20px",
+    borderRadius: "16px",
+    fontSize: "1.5rem",
+    color: "#065f46",
+    lineHeight: "1.5",
   },
   lotesGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
     gap: "14px",
     margin: "10px 0",
     width: "100%",
@@ -1097,6 +1212,16 @@ const styles = {
     fontSize: "1.8rem",
     cursor: "pointer",
   },
+  btnEliminarLoteSesion: {
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
+    border: "2px solid #fecaca",
+    padding: "8px 14px",
+    borderRadius: "10px",
+    fontSize: "1.2rem",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
   lotesCardContainer: {
     display: "flex",
     flexDirection: "column",
@@ -1121,8 +1246,6 @@ const styles = {
     fontSize: "1.8rem",
     fontWeight: "900",
     color: "#065f46",
-    borderBottom: "3px solid #cbd5e1",
-    paddingBottom: "12px",
     textTransform: "uppercase",
   },
   fieldSubGroup: {
@@ -1209,10 +1332,60 @@ const styles = {
     backgroundColor: "rgba(0, 0, 0, 0.85)",
     display: "flex",
     justifyContent: "center",
-    alignItems: "flex-end",
+    alignItems: "center",
     zIndex: 9999,
     boxSizing: "border-box",
+    padding: "20px",
   },
+  modalCardGigante: {
+    backgroundColor: "#ffffff",
+    padding: "50px",
+    borderRadius: "32px",
+    width: "100%",
+    maxWidth: "800px",
+    boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+    borderTop: "10px solid #2563eb",
+    display: "flex",
+    flexDirection: "column",
+    gap: "35px",
+    boxSizing: "border-box",
+  },
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "3px solid #f1f5f9",
+    paddingBottom: "20px",
+  },
+  modalTitulo: {
+    fontSize: "2.6rem",
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  inputModalGigante: {
+    padding: "28px 24px",
+    borderRadius: "18px",
+    border: "3px solid #2563eb",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    fontSize: "26px",
+    fontWeight: "900",
+    width: "100%",
+    boxSizing: "border-box",
+    outline: "none",
+  },
+  btnModalConfirmar: (isDisabled) => ({
+    padding: "28px",
+    backgroundColor: isDisabled ? "#cbd5e1" : "#2563eb",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "18px",
+    fontSize: "2rem",
+    fontWeight: "900",
+    cursor: isDisabled ? "not-allowed" : "pointer",
+    boxShadow: isDisabled ? "none" : "0 10px 30px rgba(37, 99, 235, 0.4)",
+    marginTop: "15px",
+  }),
   modalTecladoCardFull: {
     backgroundColor: "#ffffff",
     padding: "35px 24px 50px 24px",
@@ -1225,6 +1398,9 @@ const styles = {
     flexDirection: "column",
     gap: "25px",
     boxSizing: "border-box",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
   },
   modalTecladoHeader: {
     display: "flex",
@@ -1243,9 +1419,9 @@ const styles = {
     background: "#fee2e2",
     border: "none",
     borderRadius: "50%",
-    width: "55px",
-    height: "55px",
-    fontSize: "2rem",
+    width: "60px",
+    height: "60px",
+    fontSize: "2.2rem",
     fontWeight: "900",
     color: "#991b1b",
     cursor: "pointer",
@@ -1311,23 +1487,22 @@ const styles = {
     boxShadow: "0 6px 15px rgba(5,150,105,0.3)",
     textAlign: "center",
   },
-  toastAlert: {
+  toastAlertGigante: {
     position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    backgroundColor: "#0f172a",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(15, 23, 42, 0.95)",
     color: "#ffffff",
-    padding: "35px 50px",
-    borderRadius: "24px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "14px",
-    boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
-    zIndex: 9999,
-    fontSize: "2.2rem",
-    border: "4px solid #34d399",
+    justifyContent: "center",
+    gap: "25px",
+    zIndex: 99999,
+    padding: "30px",
+    boxSizing: "border-box",
     textAlign: "center",
   },
 };
