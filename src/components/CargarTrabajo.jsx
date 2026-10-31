@@ -11,7 +11,12 @@ const normalizarTexto = (texto) => {
     .toLowerCase();
 };
 
-export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
+export default function CargarTrabajo({
+  empleadoId,
+  maquinaId,
+  telefonoWhatsApp,
+  onVolver,
+}) {
   const [pasoActual, setPasoActual] = useState(1);
 
   const [clientes, setClientes] = useState([]);
@@ -443,6 +448,15 @@ export default function CargarTrabajo({ empleadoId, maquinaId, onVolver }) {
           total: 0,
           precio_por_hectarea: 0,
         });
+      }
+
+      // ── ENVÍO AUTOMÁTICO DE WHATSAPP POR DETRÁS DE ESCENA ──
+      if (telefonoWhatsApp) {
+        const mensajeWpp = encodeURIComponent(
+          `Hola, se ha registrado un nuevo trabajo de pulverización exitosamente para la fecha ${fechaTrabajo}.`,
+        );
+        const urlWpp = `https://api.whatsapp.com/send?phone=${telefonoWhatsApp}&text=${mensajeWpp}`;
+        window.open(urlWpp, "_blank");
       }
 
       setGuardando(false);
