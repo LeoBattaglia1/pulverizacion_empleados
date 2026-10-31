@@ -14,6 +14,7 @@ const normalizarTexto = (texto) => {
 export default function CargarTrabajo({
   empleadoId,
   maquinaId,
+  nombreEmpleado,
   telefonoWhatsApp,
   onVolver,
 }) {
@@ -82,7 +83,7 @@ export default function CargarTrabajo({
     setMensajeErrorValidacion("");
   };
 
-  // Validación en tiempo real al tipear el nombre del cliente
+  // Validación en tiempo real al tipear el nombre del cliente (ignora mayúsculas y acentos)
   const handleClienteInputChange = (e) => {
     const valor = e.target.value;
     setNuevoClienteNombre(valor);
@@ -102,7 +103,7 @@ export default function CargarTrabajo({
     }
   };
 
-  // Validación en tiempo real al tipear el nombre del campo nuevo
+  // Validación en tiempo real al tipear el nombre del campo nuevo (ignora mayúsculas y acentos)
   const handleCampoInputChange = (valorTiTeado) => {
     setNuevoCampoNombre(valorTiTeado);
     setErrorCampoInput("");
@@ -396,12 +397,16 @@ export default function CargarTrabajo({
         }
       }
 
+      let totalHectareasTrabajo = 0;
+
       for (const [loteKey, data] of lotesActivosArray) {
         const loteIdFinal = mapaIdsLotesFinales[loteKey];
         const tratamientoFinal =
           data.tratamiento === "otro" ? data.tratamientoOtro : data.tratamiento;
         const cultivoFinal =
           data.tipoCultivo === "otro" ? data.tipoCultivoOtro : data.tipoCultivo;
+
+        totalHectareasTrabajo += Number(data.hectareas);
 
         const datosTrabajo = {
           lote_id: Number(loteIdFinal),
@@ -427,22 +432,28 @@ export default function CargarTrabajo({
         });
       }
 
-      // ── REDIRECCIÓN NATIVA A WHATSAPP (FORZANDO APP MÓVIL) ──
-      if (telefonoWhatsApp) {
-        const mensajeWpp = encodeURIComponent(
-          `Hola, se ha registrado un nuevo trabajo de pulverización exitosamente para la fecha ${fechaTrabajo}.`,
-        );
-        // Usa whatsapp://send para abrir directamente la app del celular con el chat y texto precargado
-        const urlWpp = `whatsapp://send?phone=${telefonoWhatsApp}&text=${mensajeWpp}`;
-
-        // Ejecuta la redirección nativa
-        window.location.href = urlWpp;
-      }
-
       setGuardando(false);
+      // Muestra la alerta de éxito en pantalla
       setMostrarAlertaExito(true);
 
+      // Obtener nombres para el mensaje de WhatsApp
+      const clienteObj = clientes.find(
+        (c) => Number(c.id) === Number(clienteId),
+      );
+      const campoObj = campos.find((c) => Number(c.id) === Number(campoId));
+      const nombreCliente = clienteObj ? clienteObj.nombre : "Cliente";
+      const nombreCampo = campoObj ? campoObj.nombre : "Campo";
+
+      // 1. Esperar 3 segundos con la alerta de éxito en pantalla, luego redirigir a WhatsApp
       setTimeout(() => {
+        if (telefonoWhatsApp) {
+          const mensajeWpp = encodeURIComponent(
+            `NUEVO TRABAJO REGISTRADO.\nEmpleado: ${nombreEmpleado || "Operario"}\nCliente: ${nombreCliente}\nCampo: ${nombreCampo}\nCantidad hectareas: ${totalHectareasTrabajo}`,
+          );
+          const urlWpp = `whatsapp://send?phone=${telefonoWhatsApp}&text=${mensajeWpp}`;
+          window.location.href = urlWpp;
+        }
+
         setMostrarAlertaExito(false);
         setPasoActual(1);
         setClienteId("");
@@ -699,13 +710,14 @@ export default function CargarTrabajo({
                         )}
                       </div>
 
-                      {/* INPUT NATIVO NUMÉRICO PARA HECTÁREAS */}
+                      {/* INPUT NATIVO NUMÉRICO PARA HECTÁREAS (ABRE TECLADO NUMÉRICO DEL CELULAR) */}
                       <div style={styles.fieldSubGroup}>
                         <label style={styles.subLabel}>
                           Hectáreas Realizadas *
                         </label>
                         <input
                           type="number"
+                          inputMode="decimal"
                           step="any"
                           placeholder="Ingrese hectáreas..."
                           value={datos.hectareas}
@@ -1024,7 +1036,7 @@ export default function CargarTrabajo({
             ¡TRABAJO GUARDADO CON ÉXITO!
           </div>
           <div style={{ fontSize: "1.8rem", color: "#a7f3d0" }}>
-            Volviendo al menú principal...
+            Abriendo WhatsApp...
           </div>
         </div>
       )}
