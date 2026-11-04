@@ -17,7 +17,7 @@ export default function App() {
   const [sesionIniciada, setSesionIniciada] = useState(false);
 
   const CLAVE_ACCESO_SISTEMA = "1234";
-  const TELEFONO_WHATSAPP = "5492494553810";
+  const TELEFONO_WHATSAPP = "5492494694404";
 
   const [claveIngresada, setClaveIngresada] = useState("");
   const [errorClave, setErrorClave] = useState(false);
