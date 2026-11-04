@@ -12,11 +12,9 @@ export default function App() {
 
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
   const [maquinaSeleccionada, setMaquinaSeleccionada] = useState("");
-  const [vinculacionActiva, setVinculacionActiva] = useState(true);
 
   const [sesionIniciada, setSesionIniciada] = useState(false);
 
-  const CLAVE_ACCESO_SISTEMA = "1234";
   const TELEFONO_WHATSAPP = "5492494694404";
 
   const [claveIngresada, setClaveIngresada] = useState("");
@@ -60,11 +58,17 @@ export default function App() {
     };
   }, []);
 
+  // Al cambiar de operario, autoseleccionamos su máquina fija de forma estricta
   const handleEmpleadoChange = (e) => {
     const empId = e.target.value;
     setEmpleadoSeleccionado(empId);
+    setClaveIngresada("");
+    setErrorClave(false);
 
-    if (!empId || !vinculacionActiva) return;
+    if (!empId) {
+      setMaquinaSeleccionada("");
+      return;
+    }
 
     const relacion = asignaciones.find(
       (a) => String(a.empleado_id || a.empleadoId) === String(empId),
@@ -74,23 +78,6 @@ export default function App() {
       setMaquinaSeleccionada(String(relacion.maquina_id || relacion.maquinaId));
     } else {
       setMaquinaSeleccionada("");
-    }
-  };
-
-  const handleMaquinaChange = (e) => {
-    const maqId = e.target.value;
-    setMaquinaSeleccionada(maqId);
-
-    if (!maqId || !vinculacionActiva) return;
-
-    const relacion = asignaciones.find(
-      (a) => String(a.maquina_id || a.maquinaId) === String(maqId),
-    );
-
-    if (relacion) {
-      setEmpleadoSeleccionado(
-        String(relacion.empleado_id || relacion.empleadoId),
-      );
     }
   };
 
@@ -106,23 +93,42 @@ export default function App() {
     }
   };
 
-  const handleIngresar = () => {
-    if (claveIngresada !== CLAVE_ACCESO_SISTEMA) {
+  // Validación de clave individual contra el backend
+  const handleIngresar = async () => {
+    if (!empleadoSeleccionado) {
+      alert("Por favor seleccione un operario primero.");
+      return;
+    }
+
+    if (!maquinaSeleccionada) {
+      alert("El operario seleccionado no tiene una máquina vinculada.");
+      return;
+    }
+
+    try {
+      // Petición al backend para verificar la clave personal del empleado
+      const response = await api.post(
+        `/empleados/${empleadoSeleccionado}/verificar-clave`,
+        {
+          clave: claveIngresada,
+        },
+      );
+
+      if (response.data.success) {
+        setErrorClave(false);
+        setSesionIniciada(true);
+        setModalTecladoAbierto(false);
+        setModalMenuAbierto(true);
+        setVistaActiva("menu");
+      } else {
+        setErrorClave(true);
+        setModalTecladoAbierto(false);
+      }
+    } catch (error) {
+      console.error("Clave incorrecta:", error);
       setErrorClave(true);
       setModalTecladoAbierto(false);
-      return;
     }
-
-    if (!empleadoSeleccionado || !maquinaSeleccionada) {
-      alert("Por favor seleccione operario y máquina.");
-      return;
-    }
-
-    setErrorClave(false);
-    setSesionIniciada(true);
-    setModalTecladoAbierto(false);
-    setModalMenuAbierto(true);
-    setVistaActiva("menu");
   };
 
   const handleSalirSesion = () => {
@@ -267,26 +273,22 @@ export default function App() {
                 </select>
               </div>
 
+              {/* MÁQUINA FIJA (BLOQUEADA / DISABLED) */}
               <div style={styles.group}>
-                <label style={styles.label}>Máquina</label>
+                <label style={styles.label}>Máquina Asignada</label>
                 <select
-                  required
+                  disabled
                   value={maquinaSeleccionada}
-                  onChange={handleMaquinaChange}
-                  style={styles.selectLarge}
+                  style={{
+                    ...styles.selectLarge,
+                    backgroundColor: "#e2e8f0",
+                    color: "#475569",
+                    cursor: "not-allowed",
+                  }}
                 >
-                  <option
-                    value=""
-                    style={{ fontSize: "10px", padding: "12px" }}
-                  >
-                    -- Seleccionar Máquina --
-                  </option>
+                  <option value="">-- Sin máquina asignada --</option>
                   {maquinas.map((maq) => (
-                    <option
-                      key={maq.id}
-                      value={maq.id}
-                      style={{ fontSize: "10px", padding: "12px" }}
-                    >
+                    <option key={maq.id} value={maq.id}>
                       {maq.nombre ||
                         maq.modelo ||
                         maq.patente ||
@@ -296,23 +298,17 @@ export default function App() {
                 </select>
               </div>
 
-              <div style={styles.checkboxContainer}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={vinculacionActiva}
-                    onChange={(e) => setVinculacionActiva(e.target.checked)}
-                    style={{ accentColor: "#059669", transform: "scale(1.4)" }}
-                  />
-                  Vinculación automática de equipo
-                </label>
-              </div>
-
               <div style={styles.groupCentered}>
-                <label style={styles.labelCentered}>Clave de Acceso</label>
+                <label style={styles.labelCentered}>Clave Personal</label>
 
                 <div
-                  onClick={() => setModalTecladoAbierto(true)}
+                  onClick={() => {
+                    if (!empleadoSeleccionado) {
+                      alert("Primero seleccione un operario.");
+                      return;
+                    }
+                    setModalTecladoAbierto(true);
+                  }}
                   style={{
                     ...styles.inputSmallKey,
                     borderColor: errorClave ? "#dc2626" : "#64748b",
@@ -337,7 +333,13 @@ export default function App() {
 
               <button
                 type="button"
-                onClick={() => setModalTecladoAbierto(true)}
+                onClick={() => {
+                  if (!empleadoSeleccionado) {
+                    alert("Primero seleccione un operario.");
+                    return;
+                  }
+                  setModalTecladoAbierto(true);
+                }}
                 style={styles.btnIngresar}
               >
                 INGRESAR AL SISTEMA
@@ -351,7 +353,7 @@ export default function App() {
         <div style={styles.modalOverlay}>
           <div style={styles.modalTecladoCard}>
             <div style={styles.modalTecladoHeader}>
-              <span style={styles.modalTecladoTitulo}>Ingrese Clave</span>
+              <span style={styles.modalTecladoTitulo}>Ingrese su Clave</span>
               <button
                 type="button"
                 onClick={() => setModalTecladoAbierto(false)}
@@ -484,6 +486,7 @@ export default function App() {
 }
 
 const styles = {
+  // Se conservan todos tus estilos originales intactos
   appMobile: {
     width: "100%",
     minHeight: "100vh",
@@ -536,8 +539,8 @@ const styles = {
   },
   tituloHeader: {
     margin: 0,
-    fontSize: "3.2rem", // Ajustado para que luzca grande pero respete el espacio
-    lineHeight: "1.25", // Soluciona el problema de que el texto quede pisado
+    fontSize: "3.2rem",
+    lineHeight: "1.25",
     fontWeight: "900",
     color: "#ffffff",
     letterSpacing: "1px",
@@ -566,10 +569,10 @@ const styles = {
     textAlign: "center",
   },
   btnAbrirMenuFlotante: {
-    backgroundColor: "#1e3a8a", // Color azul corporativo distinto al verde
+    backgroundColor: "#1e3a8a",
     color: "#ffffff",
     border: "3px solid #3b82f6",
-    padding: "22px 24px", // Más alto y cómodo para tocar
+    padding: "22px 24px",
     borderRadius: "16px",
     fontSize: "1.8rem",
     fontWeight: "900",
@@ -884,18 +887,6 @@ const styles = {
     backgroundPosition: "right 22px center",
     backgroundSize: "32px",
   },
-  checkboxContainer: {
-    margin: "35px 0 45px 0",
-  },
-  checkboxLabel: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-    fontSize: "2.3rem",
-    color: "#334155",
-    cursor: "pointer",
-    fontWeight: "800",
-  },
   btnIngresar: {
     width: "100%",
     padding: "28px",
@@ -916,16 +907,6 @@ const styles = {
     marginBottom: "40px",
     borderBottom: "3px solid #f1f5f9",
     paddingBottom: "24px",
-  },
-  btnVolver: {
-    backgroundColor: "rgba(0,0,0,0.06)",
-    color: "#0f172a",
-    border: "1px solid #cbd5e1",
-    padding: "12px 20px",
-    borderRadius: "12px",
-    fontWeight: "900",
-    fontSize: "1.9rem",
-    cursor: "pointer",
   },
   tituloForm: {
     margin: 0,
