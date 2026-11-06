@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "./services/api";
 import CargarTrabajo from "./components/CargarTrabajo";
 import Insumos from "./components/Insumos";
+import VerResumen from "./components/VerResumen"; // <-- Nuevo módulo a crear
 import logoEmprendimiento from "./assets/L.png";
 
 export default function App() {
@@ -12,6 +13,8 @@ export default function App() {
 
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
   const [maquinaSeleccionada, setMaquinaSeleccionada] = useState("");
+  const [maquinasDisponiblesEmpleado, setMaquinasDisponiblesEmpleado] =
+    useState([]);
 
   const [sesionIniciada, setSesionIniciada] = useState(false);
 
@@ -58,7 +61,7 @@ export default function App() {
     };
   }, []);
 
-  // Al cambiar de operario, autoseleccionamos su máquina fija de forma estricta
+  // Al cambiar de operario, detectamos todas sus máquinas vinculadas
   const handleEmpleadoChange = (e) => {
     const empId = e.target.value;
     setEmpleadoSeleccionado(empId);
@@ -66,16 +69,28 @@ export default function App() {
     setErrorClave(false);
 
     if (!empId) {
+      setMaquinasDisponiblesEmpleado([]);
       setMaquinaSeleccionada("");
       return;
     }
 
-    const relacion = asignaciones.find(
+    // Buscamos todas las relaciones de este empleado con máquinas
+    const relacionesEmpleado = asignaciones.filter(
       (a) => String(a.empleado_id || a.empleadoId) === String(empId),
     );
 
-    if (relacion) {
-      setMaquinaSeleccionada(String(relacion.maquina_id || relacion.maquinaId));
+    const idsMaquinas = relacionesEmpleado.map((r) =>
+      String(r.maquina_id || r.maquinaId),
+    );
+    const listadoMaq = maquinas.filter((m) =>
+      idsMaquinas.includes(String(m.id)),
+    );
+
+    setMaquinasDisponiblesEmpleado(listadoMaq);
+
+    // Si tiene una sola máquina, la seleccionamos automáticamente. Si tiene varias, dejamos vacío para que elija.
+    if (listadoMaq.length === 1) {
+      setMaquinaSeleccionada(String(listadoMaq[0].id));
     } else {
       setMaquinaSeleccionada("");
     }
@@ -101,12 +116,11 @@ export default function App() {
     }
 
     if (!maquinaSeleccionada) {
-      alert("El operario seleccionado no tiene una máquina vinculada.");
+      alert("Por favor seleccione una máquina.");
       return;
     }
 
     try {
-      // Petición al backend para verificar la clave personal del empleado
       const response = await api.post(
         `/empleados/${empleadoSeleccionado}/verificar-clave`,
         {
@@ -226,6 +240,14 @@ export default function App() {
               maquinaId={maquinaSeleccionada}
             />
           </div>
+        ) : vistaActiva === "verResumen" ? (
+          <div style={styles.formCardGrande}>
+            <VerResumen
+              empleadoId={empleadoSeleccionado}
+              maquinaId={maquinaSeleccionada}
+              onVolver={() => setModalMenuAbierto(true)}
+            />
+          </div>
         ) : (
           <div
             style={{
@@ -273,21 +295,29 @@ export default function App() {
                 </select>
               </div>
 
-              {/* MÁQUINA FIJA (BLOQUEADA / DISABLED) */}
+              {/* MÁQUINA SELECCIONABLE SI TIENE MÁS DE UNA, O FIJA SI TIENE UNA SOLA */}
               <div style={styles.group}>
                 <label style={styles.label}>Máquina Asignada</label>
                 <select
-                  disabled
+                  required
                   value={maquinaSeleccionada}
+                  onChange={(e) => setMaquinaSeleccionada(e.target.value)}
+                  disabled={maquinasDisponiblesEmpleado.length <= 1}
                   style={{
                     ...styles.selectLarge,
-                    backgroundColor: "#e2e8f0",
-                    color: "#475569",
-                    cursor: "not-allowed",
+                    backgroundColor:
+                      maquinasDisponiblesEmpleado.length <= 1
+                        ? "#e2e8f0"
+                        : "#f8fafc",
+                    color: "#0f172a",
+                    cursor:
+                      maquinasDisponiblesEmpleado.length <= 1
+                        ? "not-allowed"
+                        : "pointer",
                   }}
                 >
-                  <option value="">-- Sin máquina asignada --</option>
-                  {maquinas.map((maq) => (
+                  <option value="">-- Seleccionar Máquina --</option>
+                  {maquinasDisponiblesEmpleado.map((maq) => (
                     <option key={maq.id} value={maq.id}>
                       {maq.nombre ||
                         maq.modelo ||
@@ -303,8 +333,8 @@ export default function App() {
 
                 <div
                   onClick={() => {
-                    if (!empleadoSeleccionado) {
-                      alert("Primero seleccione un operario.");
+                    if (!empleadoSeleccionado || !maquinaSeleccionada) {
+                      alert("Primero seleccione operario y máquina.");
                       return;
                     }
                     setModalTecladoAbierto(true);
@@ -334,8 +364,8 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!empleadoSeleccionado) {
-                    alert("Primero seleccione un operario.");
+                  if (!empleadoSeleccionado || !maquinaSeleccionada) {
+                    alert("Primero seleccione operario y máquina.");
                     return;
                   }
                   setModalTecladoAbierto(true);
@@ -457,6 +487,17 @@ export default function App() {
               >
                 CONSUMOS
               </button>
+
+              {/* NUEVO BOTÓN VER RESUMEN */}
+              <button
+                onClick={() => {
+                  setModalMenuAbierto(false);
+                  setVistaActiva("verResumen");
+                }}
+                style={styles.btnMenuModalBlue}
+              >
+                VER RESUMEN
+              </button>
             </div>
 
             <div
@@ -486,7 +527,20 @@ export default function App() {
 }
 
 const styles = {
-  // Se conservan todos tus estilos originales intactos
+  // Se mantienen tus estilos y se añade el nuevo estilo de botón azul para el menú
+  btnMenuModalBlue: {
+    width: "100%",
+    padding: "42px 20px",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "22px",
+    fontSize: "2.5rem",
+    fontWeight: "900",
+    cursor: "pointer",
+    boxShadow: "0 12px 35px rgba(37, 99, 235, 0.5)",
+    textAlign: "center",
+  },
   appMobile: {
     width: "100%",
     minHeight: "100vh",
